@@ -35,13 +35,18 @@ module.exports = (sequelize, DataTypes) => {
         //     type: DataTypes.BOOLEAN,
         //     defaultValue: false
         // }
-    }
-    );
+    });
     Users.associate = models => {
         Users.belongsTo(models.Roles, { onDelete: "cascade" })
+
         Users.hasMany(models.Publications,{onDelete:"cascade"})
         Users.hasMany(models.Commentaires,{onDelete:"cascade"})
         Users.hasMany(models.Reactions,{onDelete:"cascade"})
-    };
+
+        Users.hasMany(models.reponses, { onDelete: "cascade" })
+        Users.hasMany(models.questions, { onDelete: "cascade" })
+        Users.hasMany(models.aimes, { onDelete: "cascade" })
+    }
+
     return Users;
 }
