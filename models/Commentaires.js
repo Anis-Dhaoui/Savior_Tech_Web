@@ -2,6 +2,11 @@ module.exports = (sequelize, DataTypes) => {
     const Commentaires = sequelize.define(
         'Commentaires',
         {
+            id: {
+                type: DataTypes.UUID,
+                defaultValue: DataTypes.UUIDV4,
+                primaryKey: true
+            },
             description: {
                 type: DataTypes.STRING,
                 allowNull: false
@@ -13,6 +18,11 @@ module.exports = (sequelize, DataTypes) => {
         
         }
     );
-   
+    Commentaires.associate = models => {
+        Commentaires.belongsTo(models.Users, { onDelete: "cascade" })
+        Commentaires.belongsTo(models.Publications, { onDelete: "cascade" })
+    }   
+    
+
     return Commentaires;
 }
