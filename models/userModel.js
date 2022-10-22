@@ -9,32 +9,36 @@ module.exports = (sequelize, DataTypes) => {
             type: DataTypes.STRING,
             allowNull: false
         },
+        avatar: {
+            type: DataTypes.STRING,
+            allowNull: false
+        },
         username: {
             type: DataTypes.STRING
         },
         password: {
             type: DataTypes.STRING
         },
-        // email: {
-        //     type: DataTypes.STRING
-        // },
-        // domain: {
-        //     type: DataTypes.STRING
-        // },
-        // interest: {
-        //     type: DataTypes.STRING
-        // },
-        // speciality: {
-        //     type: DataTypes.STRING
-        // },
-        // admin: {
-        //     type: DataTypes.BOOLEAN,
-        //     defaultValue: false
-        // },
-        // confirmed: {
-        //     type: DataTypes.BOOLEAN,
-        //     defaultValue: false
-        // }
+        email: {
+            type: DataTypes.STRING
+        },
+        domain: {
+            type: DataTypes.STRING
+        },
+        interest: {
+            type: DataTypes.STRING
+        },
+        speciality: {
+            type: DataTypes.STRING
+        },
+        admin: {
+            type: DataTypes.BOOLEAN,
+            defaultValue: false
+        },
+        status: {
+            type: DataTypes.STRING,
+            defaultValue: "pending"
+        }
     });
     Users.associate = models => {
         Users.belongsTo(models.Roles, { onDelete: "cascade" })
