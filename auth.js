@@ -45,7 +45,6 @@ exports.verifyToken = async (req, res, next) => {
 
 // ***************************************** Start verify ADMIN *****************************************
 exports.verifyAdmin = (req, err, next) => {
-
     if (req.user.admin) {
         next();
     } else {
