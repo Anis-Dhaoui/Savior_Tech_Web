@@ -11,16 +11,19 @@ var roleRouter = require('./routes/roleRouter');
 
 var publicationsRouter = require('./routes/publications');
 var CommentairesRouter = require('./routes/commentaires');
-var ReactionsRouter  = require('./routes/reactions');
+var ReactionsRouter = require('./routes/reactions');
 
+var QuestionsRouter = require('./routes/Question');
+var ReponsesRouter = require('./routes/Reponses');
+var AimesRouter = require('./routes/Aimes');
 
 var app = express();
 
 const db = require('./models');
 db.sequelize.sync().then(() => {
-  console.log('Connection has been established successfully.');
+    console.log('Connection has been established successfully.');
 }).catch((error) => {
-  console.error('Unable to connect to the database: ', error);
+    console.error('Unable to connect to the database: ', error);
 });
 
 // view engine setup
@@ -39,23 +42,27 @@ app.use('/users', userRouter);
 app.use('/roles', roleRouter);
 
 app.use('/publications', publicationsRouter);
-app.use ('/commentaires',CommentairesRouter);
-app.use ('/reactions',ReactionsRouter);
+app.use('/commentaires', CommentairesRouter);
+app.use('/reactions', ReactionsRouter);
+
+app.use('/questions', QuestionsRouter);
+app.use('/reponses', ReponsesRouter);
+app.use('/aimes', AimesRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
-  next(createError(404));
+    next(createError(404));
 });
 
 // error handler
 app.use(function(err, req, res, next) {
-  // set locals, only providing error in development
-  res.locals.message = err.message;
-  res.locals.error = req.app.get('env') === 'development' ? err : {};
+    // set locals, only providing error in development
+    res.locals.message = err.message;
+    res.locals.error = req.app.get('env') === 'development' ? err : {};
 
-  // render the error page
-  res.status(err.status || 500);
-  res.render('error');
+    // render the error page
+    res.status(err.status || 500);
+    res.render('error');
 });
 
 module.exports = app;
