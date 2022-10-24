@@ -127,8 +127,7 @@ userRouter.post('/signin', (req, res, next) => {
 // /users/userId api endpoint
 userRouter.route('/:userId')
   .put(auth.verifyToken, (req, res, next) => {
-    //console.log(req.userId);
-    db.Users.update(req.body, { where: { id: req.userId } })
+    db.Users.update(req.body, { where: { id: req.user.id } })
       .then((user) => {
         res.statusCode = 200;
         res.setHeader('Content-Type', 'application/json');
@@ -138,7 +137,7 @@ userRouter.route('/:userId')
       .catch(err => next(err))
   })
   .delete((req, res, next) => {
-    db.Users.destroy({ where: { id: req.userId } })
+    db.Users.destroy({ where: { id: req.user.id } })
       .then((user) => {
         res.statusCode = 200;
         res.setHeader('Content-Type', 'application/json');
