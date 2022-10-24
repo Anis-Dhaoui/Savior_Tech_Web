@@ -2,8 +2,8 @@ var express = require('express');
 var router = express.Router();
 var db = require('../models');
 
-
-router.post('/add', (req, res) => {
+var auth = require('../auth');
+router.post('/add',  auth.verifyToken ,(req, res) => {
     db.Publications.create(req.body).then(
         (p) => {
             res.send(p);
@@ -17,14 +17,14 @@ router.get('/fetch', function (req, res, next) {
       res.send(resp);
     });
   });
-  router.delete('/remove/:id', (req, res) => {
+  router.delete('/remove/:id', auth.verifyToken , (req, res) => {
     db.Publications.destroy({ where: { id: req.params.id } }).then(
       () => {
         res.send('removed');
       }
     );
   });
-  router.put('/update/:id', (req, res) => {
+  router.put('/update/:id', auth.verifyToken , (req, res) => {
     db.Publications.update(req.body, { where: { id: req.params.id } }).then(
       () => {
         res.send('updated');

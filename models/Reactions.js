@@ -7,14 +7,11 @@ module.exports = (sequelize, DataTypes) => {
                 defaultValue: DataTypes.UUIDV4,
                 primaryKey: true
             },
-            jaime: {
-                type: DataTypes.STRING
-                
-            },
-            jaimePas: {
-                type: DataTypes.STRING
+            reaction: {
+                type: DataTypes.STRING, allowNull: false
                 
             }
+          
         
         }
     );

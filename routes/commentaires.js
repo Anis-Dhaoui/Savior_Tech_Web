@@ -19,7 +19,7 @@ router.get('/commentairesPublication/:PublicationId', function (req, res, next) 
   });
 });
 
-router.delete('/remove/:id', (req, res) => {
+router.delete('/remove/:id', auth.verifyToken , (req, res) => {
   db.Commentaires.destroy({ where: { id: req.params.id } }).then(
     () => {
       res.send('removed');
