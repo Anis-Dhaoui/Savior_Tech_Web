@@ -49,8 +49,13 @@ userRouter.post('/signup', (req, res, next) => {
       } else {
         db.Users.create({
           fullName: req.body.fullName,
+          avatar: req.body.avatar,
           username: req.body.username,
           password: bcrypt.hashSync(req.body.password, 8),
+          email: req.body.email,
+          domain: req.body.domain,
+          interest: req.body.interest,
+          speciality: req.body.speciality,
           RoleId: req.body.RoleId
         })
           .then((user) => {
@@ -87,18 +92,29 @@ userRouter.post('/signin', (req, res, next) => {
         // console.log(user.Role.dataValues.roleName);
         var generatedToken = auth.getToken({ id: user.id });
 
+        //gather information of the authenticated user
+        var info = {
+          id: user.dataValues.id,
+          fullName: user.dataValues.fullName,
+          avatar: user.dataValues.avatar,
+          username: user.dataValues.username,
+          RoleId: user.Role.dataValues.roleName,
+          email: user.dataValues.email,
+          domain: user.dataValues.domain,
+          interest: user.dataValues.interest,
+          speciality: user.dataValues.speciality,
+          RoleId: user.dataValues.RoleId,
+          admin: user.dataValues.admin,
+          status: user.dataValues.status
+        };
+
         res.statusCode = 200;
         res.setHeader('Content-Type', 'application/json');
         res.json({
           success: true,
           statusMsg: "login success",
           token: generatedToken,
-          userInfo: {
-            id: user.dataValues.id,
-            fullName: user.dataValues.fullName,
-            username: user.dataValues.username,
-            RoleId: user.Role.dataValues.roleName
-          }
+          userInfo: info
         });
       }
     })

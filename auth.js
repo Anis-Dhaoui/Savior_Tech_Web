@@ -1,3 +1,5 @@
+const Users = require('./models').Users;
+
 var jwt = require('jsonwebtoken');
 const secretKey = "123-456-789-101-112";
 
@@ -12,6 +14,7 @@ exports.getToken = (user) => {
 
 // ***************************************** Start verify if user authenticated *****************************************
 exports.verifyToken = (req, res, next) => {
+    console.log(Users);
     let token = req.headers.bearer;
     // console.log(req.headers.bearer);
 
@@ -27,8 +30,22 @@ exports.verifyToken = (req, res, next) => {
                 message: "Unauthorized!"
             });
         }
-        req.userId = decoded.id;
+        // req.user = Users.findOne({where: {id: decoded.id}})
         next();
     });
 };
-// *****************************************End verify user *****************************************
+// ***************************************** End verify user *****************************************
+
+
+// ***************************************** Start verify ADMIN *****************************************
+exports.verifyAdmin = (req, err, next) =>{
+
+    if(req.user.admin){
+        next();
+    }else{
+        var err = new Error("You're not admin, you're not allowed to perform this operation.");
+        err.status = 403;
+        next(err);
+    }
+};
+// ***************************************** End verify ADMIN *****************************************

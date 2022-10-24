@@ -7,6 +7,7 @@ var auth = require('../auth');
 // /roles/ api endpoint
 roleRouter.route('/')
     .get(auth.verifyToken, (req, res, next) => {
+        console.log(req.user);
         db.Roles.findAll()
             .then((roles) => {
                 if (roles !== null) {
