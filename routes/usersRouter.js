@@ -4,6 +4,7 @@ const userRouter = express.Router();
 var auth = require('../auth');
 var bcrypt = require("bcryptjs");
 userRouter.use(express.json());
+var sendEmail = require('../utils/email');
 
 // /users/ api endpoint
 userRouter.get('/', (req, res, next) => {
@@ -39,6 +40,38 @@ userRouter.delete('/', (req, res, next) => {
 
 
 // $$$$$$$$$$$$$$$$$$$ SIGNUP $$$$$$$$$$$$$$$$$$$
+// userRouter.post('/signup', (req, res, next) => {
+//   db.Users.findOne({ where: { username: req.body.username } })
+//     .then((user) => {
+//       if (user) {
+//         res.statusCode = 409;
+//         res.setHeader('Content-Type', 'application/json');
+//         res.json({ success: false, statusMsg: "username already exists" });
+//       } else {
+//         db.Users.create({
+//           fullName: req.body.fullName,
+//           avatar: req.body.avatar,
+//           username: req.body.username,
+//           password: bcrypt.hashSync(req.body.password, 8),
+//           email: req.body.email,
+//           domain: req.body.domain,
+//           interest: req.body.interest,
+//           speciality: req.body.speciality,
+//           RoleId: req.body.RoleId
+//         })
+//           .then((user) => {
+//             res.statusCode = 200;
+//             res.setHeader('Content-Type', 'application/json');
+//             res.json({ success: true, message: "Signup successfully", user: user });
+//           })
+//       }
+//     },
+//       err => next(err))
+//     .catch(err => next(err))
+// });
+// $$$$$$$$$$$$$$$$$$$ SIGNUP $$$$$$$$$$$$$$$$$$$
+
+// $$$$$$$$$$$$$$$$$$$ SIGNUP WITH EMAIL CONFIRMATION $$$$$$$$$$$$$$$$$$$
 userRouter.post('/signup', (req, res, next) => {
   db.Users.findOne({ where: { username: req.body.username } })
     .then((user) => {
@@ -47,6 +80,7 @@ userRouter.post('/signup', (req, res, next) => {
         res.setHeader('Content-Type', 'application/json');
         res.json({ success: false, statusMsg: "username already exists" });
       } else {
+        const confirCode = auth.getToken({email: req.body.email });
         db.Users.create({
           fullName: req.body.fullName,
           avatar: req.body.avatar,
@@ -56,9 +90,20 @@ userRouter.post('/signup', (req, res, next) => {
           domain: req.body.domain,
           interest: req.body.interest,
           speciality: req.body.speciality,
+          confirEmailCode: confirCode,
           RoleId: req.body.RoleId
         })
           .then((user) => {
+            
+            const message = 
+            `<div>
+              <h1>Email Confirmation</h1>
+              <h2>Hello ${req.body.fullName}</h2>
+              <p>Thank you for subscribing. Please confirm your email by clicking on the following link</p>
+              <a href=${process.env.BASE_URL}/users/verify/${confirCode}> Click here</a>
+            </div>`
+            sendEmail(req.body.email, "SAVIOR TECH | Confirm Email", message);
+
             res.statusCode = 200;
             res.setHeader('Content-Type', 'application/json');
             res.json({ success: true, message: "Signup successfully", user: user });
