@@ -49,7 +49,7 @@ userRouter.post('/signup', (req, res, next) => {
         res.setHeader('Content-Type', 'application/json');
         res.json({ success: false, statusMsg: "username already exists" });
       } else {
-        const confirCode = auth.getToken({email: req.body.email });
+        const confirCode = auth.getToken({ email: req.body.email });
         db.Users.create({
           fullName: req.body.fullName,
           avatar: req.body.avatar,
@@ -63,9 +63,9 @@ userRouter.post('/signup', (req, res, next) => {
           RoleId: req.body.RoleId
         })
           .then((user) => {
-            
-            const message = 
-            `<div>
+
+            const message =
+              `<div>
               <h1>Email Confirmation</h1>
               <h2>Hello ${req.body.fullName}</h2>
               <p>Thank you for subscribing. Please confirm your email by clicking on the following link</p>
@@ -87,48 +87,58 @@ userRouter.post('/signup', (req, res, next) => {
 
 // $$$$$$$$$$$$$$$$$$$ SIGNIN $$$$$$$$$$$$$$$$$$$
 userRouter.post('/signin', (req, res, next) => {
-  db.Users.findOne({ where: { username: req.body.username }, include: db.Roles })
+  db.Users.findOne({ where: { username: req.body.username }, include: db.Roles, raw: true, nest: true })
     .then((user) => {
       if (!user) {
         res.statusCode = 404;
         res.setHeader('Content-Type', 'application/json');
         res.json({ success: false, statusMsg: "username does not exist" });
-      }
-      // console.log(user.dataValues);
-      var isPassdValid = bcrypt.compareSync(req.body.password, user.dataValues.password);
 
-      if (!isPassdValid) {
-        res.statusCode = 401;
+      } else if (user.status === "pending") {
+        res.statusCode = 202;
         res.setHeader('Content-Type', 'application/json');
-        res.json({ success: false, statusMsg: "incorrect password" });
+        res.json({ success: false, statusMsg: "Please verify your email" });
+
+      } else if (user.status === "blocked") {
+        res.statusCode = 403;
+        res.setHeader('Content-Type', 'application/json');
+        res.json({ success: false, statusMsg: "Your account has been blocked" });
 
       } else {
-         //console.log(user.Role.dataValues.roleName);
-        var generatedToken = auth.getToken({ id: user.id });
+        var isPassdValid = bcrypt.compareSync(req.body.password, user.password);
 
-        //gather information of the authenticated user
-        var info = {
-          id: user.dataValues.id,
-          fullName: user.dataValues.fullName,
-          avatar: user.dataValues.avatar,
-          username: user.dataValues.username,
-          email: user.dataValues.email,
-          domain: user.dataValues.domain,
-          interest: user.dataValues.interest,
-          speciality: user.dataValues.speciality,
-          role: user.Role.dataValues.roleName,
-          admin: user.dataValues.admin,
-          status: user.dataValues.status
-        };
+        if (!isPassdValid) {
+          res.statusCode = 401;
+          res.setHeader('Content-Type', 'application/json');
+          res.json({ success: false, statusMsg: "incorrect password" });
 
-        res.statusCode = 200;
-        res.setHeader('Content-Type', 'application/json');
-        res.json({
-          success: true,
-          statusMsg: "login success",
-          token: generatedToken,
-          userInfo: info
-        });
+        } else {
+          var generatedToken = auth.getToken({ id: user.id });
+
+          //gather information of the authenticated user
+          var info = {
+            id: user.id,
+            fullName: user.fullName,
+            avatar: user.avatar,
+            username: user.username,
+            email: user.email,
+            domain: user.domain,
+            interest: user.interest,
+            speciality: user.speciality,
+            role: user.Role.roleName,
+            admin: user.admin,
+            status: user.status
+          };
+
+          res.statusCode = 200;
+          res.setHeader('Content-Type', 'application/json');
+          res.json({
+            success: true,
+            statusMsg: "login success",
+            token: generatedToken,
+            userInfo: info
+          });
+        }
       }
     })
 });
