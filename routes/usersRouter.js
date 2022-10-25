@@ -39,39 +39,8 @@ userRouter.delete('/', (req, res, next) => {
 
 
 
-// $$$$$$$$$$$$$$$$$$$ SIGNUP $$$$$$$$$$$$$$$$$$$
-// userRouter.post('/signup', (req, res, next) => {
-//   db.Users.findOne({ where: { username: req.body.username } })
-//     .then((user) => {
-//       if (user) {
-//         res.statusCode = 409;
-//         res.setHeader('Content-Type', 'application/json');
-//         res.json({ success: false, statusMsg: "username already exists" });
-//       } else {
-//         db.Users.create({
-//           fullName: req.body.fullName,
-//           avatar: req.body.avatar,
-//           username: req.body.username,
-//           password: bcrypt.hashSync(req.body.password, 8),
-//           email: req.body.email,
-//           domain: req.body.domain,
-//           interest: req.body.interest,
-//           speciality: req.body.speciality,
-//           RoleId: req.body.RoleId
-//         })
-//           .then((user) => {
-//             res.statusCode = 200;
-//             res.setHeader('Content-Type', 'application/json');
-//             res.json({ success: true, message: "Signup successfully", user: user });
-//           })
-//       }
-//     },
-//       err => next(err))
-//     .catch(err => next(err))
-// });
-// $$$$$$$$$$$$$$$$$$$ SIGNUP $$$$$$$$$$$$$$$$$$$
 
-// $$$$$$$$$$$$$$$$$$$ SIGNUP WITH EMAIL CONFIRMATION $$$$$$$$$$$$$$$$$$$
+// $$$$$$$$$$$$$$$$$$$ SIGNUP $$$$$$$$$$$$$$$$$$$
 userRouter.post('/signup', (req, res, next) => {
   db.Users.findOne({ where: { username: req.body.username } })
     .then((user) => {
@@ -134,7 +103,7 @@ userRouter.post('/signin', (req, res, next) => {
         res.json({ success: false, statusMsg: "incorrect password" });
 
       } else {
-        // console.log(user.Role.dataValues.roleName);
+         //console.log(user.Role.dataValues.roleName);
         var generatedToken = auth.getToken({ id: user.id });
 
         //gather information of the authenticated user
@@ -143,12 +112,11 @@ userRouter.post('/signin', (req, res, next) => {
           fullName: user.dataValues.fullName,
           avatar: user.dataValues.avatar,
           username: user.dataValues.username,
-          RoleId: user.Role.dataValues.roleName,
           email: user.dataValues.email,
           domain: user.dataValues.domain,
           interest: user.dataValues.interest,
           speciality: user.dataValues.speciality,
-          RoleId: user.dataValues.RoleId,
+          role: user.Role.dataValues.roleName,
           admin: user.dataValues.admin,
           status: user.dataValues.status
         };
