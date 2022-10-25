@@ -43,6 +43,12 @@ module.exports = (sequelize, DataTypes) => {
         status: {
             type: DataTypes.STRING,
             defaultValue: "pending"
+        },
+        confirEmailCode: {
+            type: DataTypes.STRING
+        },
+        confirResetPassCode: {
+            type: DataTypes.STRING
         }
     });
     Users.associate = models => {
