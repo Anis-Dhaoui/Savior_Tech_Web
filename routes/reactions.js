@@ -6,22 +6,22 @@ var auth = require('../auth');
 const { where } = require('sequelize');
 const Reactions = require('../models/Reactions');
 
-router.post('/add', async (req, res, next) => {
+router.post('/add', auth.verifyToken, (req, res, next) => {
   db.Reactions.findAndCountAll({ where: { reaction: req.body.reaction, PublicationId: req.body.PublicationId, UserId: req.body.UserId } })
-    .then(count => {
+    .then((count) => {
       if (count != 0) {
         db.Reactions.destroy({ where: { reaction: req.body.reaction, PublicationId: req.body.PublicationId, UserId: req.body.UserId } })
-        res.send("Reaction supprimier");
+          .then(() => {
+            res.send("Reaction supprimier")
+          })
       }
-      db.Reactions.create(req.body).then(
-        (p) => {
-          res.send(p);
-        }
-      );
+      db.Reactions.create(req.body).then(() => {
+        res.send("Reaction ajouter")
+      })
 
-    });
+    })
 
-});
+})
 
 
 router.get('/fetchJaime', function (req, res, next) {
