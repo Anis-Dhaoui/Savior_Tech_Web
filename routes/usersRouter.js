@@ -70,13 +70,12 @@ userRouter.post('/signup', (req, res, next) => {
           RoleId: req.body.RoleId
         })
           .then((user) => {
-
             const message =
               `<div>
               <h1>Email Confirmation</h1>
               <h2>Hello ${req.body.fullName}</h2>
               <p>Thank you for subscribing. Please confirm your email by clicking on the following link</p>
-              <a href=${process.env.BASE_URL}/users/verify/${confirCode}> Click here</a>
+              <a href=${process.env.BASE_URL}/users/verify/${user.dataValues.id}/${confirCode}> Click here</a>
             </div>`
             sendEmail(req.body.email, "SAVIOR TECH | Confirm Email", message);
 
@@ -91,6 +90,31 @@ userRouter.post('/signup', (req, res, next) => {
     .catch(err => next(err))
 });
 // $$$$$$$$$$$$$$$$$$$ SIGNUP $$$$$$$$$$$$$$$$$$$
+
+// $$$$$$$$$$$$$$$$$$$ VERIFY EMAIL $$$$$$$$$$$$$$$$$$$
+userRouter.get('/verify/:userId/:confirCode', (req, res, next) => {
+  db.Users.update(
+    { confirEmailCode: null, status: "confirmed" },
+    { where: { [Op.and]: [{ id: req.params.userId }, { confirEmailCode: req.params.confirCode }] } }
+  )
+    .then((user) => {
+      if (user[0] !== 0) {
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.json({ success: true, statusMsg: "Account verified successfully" });
+        console.log("Account verified successfully");
+
+      } else {
+        res.statusCode = 403;
+        res.setHeader('Content-Type', 'application/json');
+        res.json({ success: false, statusMsg: "Invalid confirmation link" });
+        console.log("invalid link");
+      }
+    },
+      err => next(err))
+    .catch(() => next(new Error("Something went wrong")));
+});
+// $$$$$$$$$$$$$$$$$$$ VERIFY EMAIL $$$$$$$$$$$$$$$$$$$
 
 
 // $$$$$$$$$$$$$$$$$$$ SIGNIN $$$$$$$$$$$$$$$$$$$
