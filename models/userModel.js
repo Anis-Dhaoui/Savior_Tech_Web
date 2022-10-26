@@ -11,25 +11,35 @@ module.exports = (sequelize, DataTypes) => {
         },
         avatar: {
             type: DataTypes.STRING,
-            allowNull: false
         },
         username: {
-            type: DataTypes.STRING
+            type: DataTypes.STRING,
+            allowNull: false,
+            unique: true
         },
         password: {
-            type: DataTypes.STRING
+            type: DataTypes.STRING,
+            allowNull: false
         },
         email: {
-            type: DataTypes.STRING
+            type: DataTypes.STRING,
+            allowNull: false,
+            unique: true,
+            validate: {
+                isEmail: true
+            }
         },
         domain: {
-            type: DataTypes.STRING
+            type: DataTypes.STRING,
+            allowNull: false
         },
         interest: {
-            type: DataTypes.STRING
+            type: DataTypes.STRING,
+            allowNull: false
         },
         speciality: {
-            type: DataTypes.STRING
+            type: DataTypes.STRING,
+            allowNull: false
         },
         admin: {
             type: DataTypes.BOOLEAN,
@@ -37,7 +47,16 @@ module.exports = (sequelize, DataTypes) => {
         },
         status: {
             type: DataTypes.STRING,
-            defaultValue: "pending"
+            defaultValue: "pending",
+            validate: {
+                isIn: [['pending', 'confirmed', 'blocked']]
+            }
+        },
+        confirEmailCode: {
+            type: DataTypes.STRING
+        },
+        confirResetPassCode: {
+            type: DataTypes.STRING
         }
     });
     Users.associate = models => {

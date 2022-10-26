@@ -8,9 +8,10 @@ module.exports = (sequelize, DataTypes) => {
                 primaryKey: true
             },
             reaction: {
-                type: DataTypes.STRING
+                type: DataTypes.STRING, allowNull: false
                 
             }
+          
         
         }
     );
