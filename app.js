@@ -14,6 +14,7 @@ var roleRouter = require('./routes/roleRouter');
 var publicationsRouter = require('./routes/publications');
 var CommentairesRouter = require('./routes/commentaires');
 var ReactionsRouter = require('./routes/reactions');
+var SignalerRouter = require('./routes/Signaler');
 
 var QuestionsRouter = require('./routes/Question');
 var ReponsesRouter = require('./routes/Reponses');
@@ -46,6 +47,8 @@ app.use('/roles', roleRouter);
 app.use('/publications', publicationsRouter);
 app.use('/commentaires', CommentairesRouter);
 app.use('/reactions', ReactionsRouter);
+app.use('/signaler',SignalerRouter);
+
 
 app.use('/questions', QuestionsRouter);
 app.use('/reponses', ReponsesRouter);

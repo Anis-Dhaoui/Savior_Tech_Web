@@ -66,6 +66,8 @@ module.exports = (sequelize, DataTypes) => {
         Users.hasMany(models.Publications,{onDelete:"cascade"})
         Users.hasMany(models.Commentaires,{onDelete:"cascade"})
         Users.hasMany(models.Reactions,{onDelete:"cascade"})
+        Users.hasMany(models.Signaler ,{onDelete: "cascade"})
+
 
         Users.hasMany(models.reponses, { onDelete: "cascade" })
         Users.hasMany(models.questions, { onDelete: "cascade" })
