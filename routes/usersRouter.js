@@ -5,6 +5,7 @@ var auth = require('../auth');
 var bcrypt = require("bcryptjs");
 userRouter.use(express.json());
 var sendEmail = require('../utils/email');
+const { Op } = require("sequelize");
 
 // /users/ api endpoint
 userRouter.get('/', (req, res, next) => {
@@ -42,12 +43,18 @@ userRouter.delete('/', (req, res, next) => {
 
 // $$$$$$$$$$$$$$$$$$$ SIGNUP $$$$$$$$$$$$$$$$$$$
 userRouter.post('/signup', (req, res, next) => {
-  db.Users.findOne({ where: { username: req.body.username } })
+  db.Users.findOne({ where: { [Op.or]: [{ username: req.body.username }, { email: req.body.email }] }, raw: true })
     .then((user) => {
-      if (user) {
+      if (user && user.username == req.body.username) {
         res.statusCode = 409;
         res.setHeader('Content-Type', 'application/json');
-        res.json({ success: false, statusMsg: "username already exists" });
+        res.json({ success: false, statusMsg: "Username is already exists" });
+
+      } else if (user && user.email == req.body.email) {
+        res.statusCode = 409;
+        res.setHeader('Content-Type', 'application/json');
+        res.json({ success: false, statusMsg: "Email is already exists" });
+
       } else {
         const confirCode = auth.getToken({ email: req.body.email });
         db.Users.create({
@@ -76,7 +83,8 @@ userRouter.post('/signup', (req, res, next) => {
             res.statusCode = 200;
             res.setHeader('Content-Type', 'application/json');
             res.json({ success: true, message: "Signup successfully", user: user });
-          })
+          },
+            err => next(err))
       }
     },
       err => next(err))
@@ -105,9 +113,9 @@ userRouter.post('/signin', (req, res, next) => {
         res.json({ success: false, statusMsg: "Your account has been blocked" });
 
       } else {
-        var isPassdValid = bcrypt.compareSync(req.body.password, user.password);
+        var isPassValid = bcrypt.compareSync(req.body.password, user.password);
 
-        if (!isPassdValid) {
+        if (!isPassValid) {
           res.statusCode = 401;
           res.setHeader('Content-Type', 'application/json');
           res.json({ success: false, statusMsg: "incorrect password" });
@@ -159,7 +167,8 @@ userRouter.route('/:userId')
         err => next(err))
       .catch(err => next(err))
   })
-  .delete((req, res, next) => {
+
+  .delete(auth.verifyToken, (req, res, next) => {
     db.Users.destroy({ where: { id: req.user.id } })
       .then((user) => {
         res.statusCode = 200;

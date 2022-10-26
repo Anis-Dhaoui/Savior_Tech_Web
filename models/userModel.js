@@ -14,7 +14,8 @@ module.exports = (sequelize, DataTypes) => {
         },
         username: {
             type: DataTypes.STRING,
-            allowNull: false
+            allowNull: false,
+            unique: true
         },
         password: {
             type: DataTypes.STRING,
@@ -22,7 +23,11 @@ module.exports = (sequelize, DataTypes) => {
         },
         email: {
             type: DataTypes.STRING,
-            allowNull: false
+            allowNull: false,
+            unique: true,
+            validate: {
+                isEmail: true
+            }
         },
         domain: {
             type: DataTypes.STRING,
@@ -42,7 +47,10 @@ module.exports = (sequelize, DataTypes) => {
         },
         status: {
             type: DataTypes.STRING,
-            defaultValue: "pending"
+            defaultValue: "pending",
+            validate: {
+                isIn: [['pending', 'confirmed', 'blocked']]
+            }
         },
         confirEmailCode: {
             type: DataTypes.STRING
