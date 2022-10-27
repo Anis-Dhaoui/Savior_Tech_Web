@@ -4,13 +4,22 @@ var db = require('../models');
 const Sequelize = require("sequelize");
 const Op = Sequelize.Op;
 
+const multer = require('multer')
+
+
+
 var auth = require('../auth');
 const { where } = require('sequelize');
 
 
-router.post('/add', auth.verifyToken, (req, res) => {
+router.post('/add', (req, res) => {
 
-  db.Publications.create(req.body).then(
+  db.Publications.create({
+    titre: req.body.titre,
+    description: req.body.description,
+    image: req.file,
+    statut: 'active'
+  }).then(
     (p) => {
       res.send(p);
     }
@@ -20,7 +29,7 @@ router.post('/add', auth.verifyToken, (req, res) => {
 
 router.get('/fetch', function (req, res, next) {
 
-  db.Publications.findAll({ where: { statut:'active' }}).then((resp) => {
+  db.Publications.findAll({ where: { statut: 'active' } }).then((resp) => {
 
     res.send(resp);
 
@@ -58,15 +67,10 @@ router.get('/search/:searchTerm', function (req, res, next) {
   });
 });
 
-router.post('/signaler/:id', (req, res) => {
-  var idUser = req.params.id;
-  db.Publications.findOne({ where: { id } })
-})
 
 module.exports = router;
 
 
-// Signaler un commentaire, un user
 // Notification
 // Une liste des favoris     
 

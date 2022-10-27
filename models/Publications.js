@@ -29,7 +29,7 @@ module.exports = (sequelize, DataTypes) => {
         Publications.hasMany(models.Reactions, { onDelete: "cascade" })
         Publications.hasMany(models.Signaler, { onDelete: "cascade" })
         Publications.belongsTo(models.Users, { onDelete: "cascade" })
-        
+
     }
 
 
