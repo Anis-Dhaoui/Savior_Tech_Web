@@ -12,7 +12,7 @@ module.exports = (sequelize, DataTypes) => {
         },
         event_image: {
             type: DataTypes.STRING,
-            allowNull: false
+            defaultValue: null
         },
         event_category: {
             type: DataTypes.STRING,
