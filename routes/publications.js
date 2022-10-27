@@ -11,19 +11,25 @@ const multer = require('multer')
 var auth = require('../auth');
 const { where } = require('sequelize');
 
-
 router.post('/add', (req, res) => {
 
+  var file = req.files.image;
+  var imgName = file.name;
+
+  file.mv('public/images/upload/' + imgName)
   db.Publications.create({
     titre: req.body.titre,
     description: req.body.description,
-    image: req.file,
+    image: imgName,
     statut: 'active'
   }).then(
     (p) => {
       res.send(p);
     }
   );
+
+
+
 });
 
 
