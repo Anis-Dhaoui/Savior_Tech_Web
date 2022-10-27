@@ -7,6 +7,7 @@ require("dotenv").config();
 
 
 var eventRouter = require('./routes/eventsRouter');
+var uploadEventimgsRouter = require('./routes/uploadEventsImgs');
 
 var userRouter = require('./routes/usersRouter');
 var roleRouter = require('./routes/roleRouter');
@@ -39,6 +40,7 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/events', eventRouter);
+app.use('/eventimages', uploadEventimgsRouter);
 
 app.use('/users', userRouter);
 app.use('/roles', roleRouter);
