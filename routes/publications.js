@@ -6,7 +6,10 @@ const Op = Sequelize.Op;
 
 var auth = require('../auth');
 const { where } = require('sequelize');
+
+
 router.post('/add', auth.verifyToken, (req, res) => {
+
   db.Publications.create(req.body).then(
     (p) => {
       res.send(p);
@@ -16,8 +19,12 @@ router.post('/add', auth.verifyToken, (req, res) => {
 
 
 router.get('/fetch', function (req, res, next) {
-  db.Publications.findAll().then((resp) => {
+
+  db.Publications.findAll({ where: { statut:'active' }}).then((resp) => {
+
     res.send(resp);
+
+
   });
 });
 router.delete('/remove/:id', auth.verifyToken, (req, res) => {
@@ -51,10 +58,15 @@ router.get('/search/:searchTerm', function (req, res, next) {
   });
 });
 
+router.post('/signaler/:id', (req, res) => {
+  var idUser = req.params.id;
+  db.Publications.findOne({ where: { id } })
+})
 
 module.exports = router;
 
-// Filtrage et recherche multicritères x  >>
+
 // Signaler un commentaire, un user
 // Notification
 // Une liste des favoris     
+
