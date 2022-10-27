@@ -14,16 +14,15 @@ router.post('/add', (req, res, next) => {
                     res.send("Signaler !")
                 }).then(() => {
                     db.Signaler.count({ where: { PublicationId: req.body.PublicationId } }).then((count) => {
-                        if (count <= 3 ){
-                        db.Publications.update(
-                            { statut: 'Deactive' },
-                            { where: { id: req.body.PublicationId } }
-                        )
+                        if (count <= 3) {
+                            db.Publications.update(
+                                { statut: 'Deactive' },
+                                { where: { id: req.body.PublicationId } }
+                            )
                         }
                     })
 
                 })
-
             }
         })
 

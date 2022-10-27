@@ -6,7 +6,7 @@ var auth = require('../auth');
 const { where } = require('sequelize');
 const Reactions = require('../models/Reactions');
 
-router.post('/add', auth.verifyToken, (req, res, next) => {
+router.post('/add', (req, res, next) => {
   db.Reactions.count({ where: { reaction: req.body.reaction, PublicationId: req.body.PublicationId, UserId: req.body.UserId } })
     .then((count) => {
       if (count != 0) {
