@@ -16,7 +16,7 @@ router.get('/', function(req, res) {
 function sendTextMessage() {
   client.messages.create({
     body: 'Hello from Savior Tech',
-    to: '+21655289137',
+    to: '+21653591611',
     from: '+12345678901'
  }).then(message => console.log(message))
    // here you can implement your fallback code
