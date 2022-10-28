@@ -4,6 +4,9 @@ const db = require('../models');
 const EVENT = db.Events;
 const PARTICIPANT = db.Participants;
 const USER = db.Users;
+const shortUUID = require('short-uuid');
+const auth = require('../auth');
+const fs = require('fs');
 
 
 //For testing purpose
@@ -37,23 +40,38 @@ eventRouter.route('/')
                 err => next(err))
             .catch(err => next(err))
     })
-    .post((req, res, next) => {
-        EVENT.create(req.body)
-            .then((event) => {
-                res.statusCode = 200;
-                res.setHeader('Content-Type', 'application/json');
-                res.json({ success: true, message: "Event added successfully", event: event });
-            },
-                err => {
-                    // if err.code === 11000 that means there is a duplicate key
-                    if (err.code && err.code === 11000) {
-                        res.statusCode = 409;
-                        res.setHeader('Content-Type', 'application/json');
-                        res.json({ success: false, message: "Event name is already exist" });
-                    } else
-                        next(err);
+    .post(auth.verifyToken, auth.verifyAdmin, (req, res, next) => {
+        if (!req.files) {
+            EVENT.create(req.body)
+                .then((event) => {
+                    res.statusCode = 200;
+                    res.setHeader('Content-Type', 'application/json');
+                    res.json({ success: true, message: "Event added successfully", event: event });
+                },
+                    err => next(err))
+                .catch(err => next(err));
+        } else {
+            var imageName = `${shortUUID.generate()}-${req.user.id}.${file.mimetype.split('/')[1]}`;
+            var file = req.files.image;
+            if (file.mimetype == "image/jpeg" || file.mimetype == "image/png" || file.mimetype == "image/gif") {
+                file.mv('public/images/upload/events/' + imageName, (err) => {
+                    if (err) {
+                        next(err)
+                    } else {
+                        req.body.event_image = imageName;
+                        EVENT.create(req.body)
+                            .then((event) => {
+                                res.statusCode = 200;
+                                res.setHeader('Content-Type', 'application/json');
+                                res.json({ success: true, message: "Event added successfully", event: event });
+                            },
+                                err => next(err))
+                            .catch(err => next(err));
+
+                    }
                 })
-            .catch(err => next(err));
+            }
+        }
     });
 
 
@@ -95,9 +113,31 @@ eventRouter.route('/:eventId')
                 err => next(err))
             .catch(err => next(err))
     })
-    .delete((req, res, next) => {
+    .delete(auth.verifyToken, auth.verifyAdmin, (req, res, next) => {
+        EVENT.findOne({ where: { id: req.params.eventId }, raw: true })
+            .then((event) => {
+                if (event.event_image != null) {
+                    var imgWithPath = `public/images/upload/events/${event.event_image}`;
+
+                    if (fs.existsSync(imgWithPath)) {
+                        if (event.event_image.includes(req.user.id)) {
+                            fs.unlink(imgWithPath, err => {
+                                if (err) next(err);
+                            });
+                        } else {
+                            console.log("This is not your own picture");
+                        }
+                    } else {
+                        console.log("image doesn't exist");
+                    }
+                }
+            },
+                err => next(err))
+            .catch(err => next(err))
+
         EVENT.destroy({ where: { id: req.params.eventId } })
             .then((event) => {
+
                 res.statusCode = 200;
                 res.setHeader('Content-Type', 'application/json');
                 res.json({ success: true, message: "Event deleted successfully", deletedEvent: event });

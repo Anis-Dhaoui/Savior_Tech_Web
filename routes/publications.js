@@ -4,20 +4,42 @@ var db = require('../models');
 const Sequelize = require("sequelize");
 const Op = Sequelize.Op;
 
+const multer = require('multer')
+
+
+
 var auth = require('../auth');
 const { where } = require('sequelize');
-router.post('/add', auth.verifyToken, (req, res) => {
-  db.Publications.create(req.body).then(
+
+router.post('/add', (req, res) => {
+
+  var file = req.files.image;
+  var imgName = file.name;
+
+  file.mv('public/images/upload/' + imgName)
+  db.Publications.create({
+    titre: req.body.titre,
+    description: req.body.description,
+    image: imgName,
+    statut: 'active'
+  }).then(
     (p) => {
       res.send(p);
     }
   );
+
+
+
 });
 
 
 router.get('/fetch', function (req, res, next) {
-  db.Publications.findAll().then((resp) => {
+
+  db.Publications.findAll({ where: { statut: 'active' } }).then((resp) => {
+
     res.send(resp);
+
+
   });
 });
 router.delete('/remove/:id', auth.verifyToken, (req, res) => {
@@ -54,7 +76,7 @@ router.get('/search/:searchTerm', function (req, res, next) {
 
 module.exports = router;
 
-// Filtrage et recherche multicritères x  >>
-// Signaler un commentaire, un user
+
 // Notification
 // Une liste des favoris     
+

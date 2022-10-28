@@ -12,7 +12,7 @@ router.post('/add', (req, res) => {
 });
 
 
-router.get('/fetch', function(req, res, next) {
+router.get('/', function(req, res, next) {
     db.reponses.findAll().then((resp) => {
         res.send(resp);
     });

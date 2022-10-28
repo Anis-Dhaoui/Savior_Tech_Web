@@ -16,17 +16,22 @@ module.exports = (sequelize, DataTypes) => {
             },
             image: {
                 type: DataTypes.STRING, allowNull: false
+            },
+            statut: {
+                type: DataTypes.STRING, allowNull: false
             }
-           
+
 
         }
     );
-    Publications.associate=models=>{
-        Publications.hasMany(models.Commentaires,{onDelete:"cascade"})
-        Publications.hasMany(models.Reactions,{onDelete:"cascade"})
-        Publications.belongsTo(models.Users,{onDelete:"cascade"})
+    Publications.associate = models => {
+        Publications.hasMany(models.Commentaires, { onDelete: "cascade" })
+        Publications.hasMany(models.Reactions, { onDelete: "cascade" })
+        Publications.hasMany(models.Signaler, { onDelete: "cascade" })
+        Publications.belongsTo(models.Users, { onDelete: "cascade" })
+
     }
-   
+
 
     return Publications;
 }

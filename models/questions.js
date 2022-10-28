@@ -19,7 +19,16 @@ module.exports = (sequelize, DataTypes) => {
             },
             image: {
                 type: DataTypes.STRING,
-                allowNull: false
+                allowNull: true
+            },
+            status: {
+                type: DataTypes.STRING,
+                defaultValue: "actif",
+                validate: {
+                    isIn: [
+                        ['actif', 'supprimer', 'signaler']
+                    ]
+                }
             }
 
         }
