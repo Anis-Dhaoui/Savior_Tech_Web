@@ -59,16 +59,20 @@ userRouter.post('/signup', (req, res, next) => {
 
       } else {
         const confirCode = auth.getToken({ email: req.body.email });
+        const smsConfirCode = codeGenerator(6, { type: 'number' });
+        console.log(smsConfirCode);
         db.Users.create({
           fullName: req.body.fullName,
           avatar: req.body.avatar,
           username: req.body.username,
           password: bcrypt.hashSync(req.body.password, 8),
           email: req.body.email,
+          phone: req.body.phone,
           domain: req.body.domain,
           interest: req.body.interest,
           speciality: req.body.speciality,
           confirEmailCode: confirCode,
+          confirSmsCode: smsConfirCode,
           RoleId: req.body.RoleId
         })
           .then((user) => {
@@ -81,9 +85,8 @@ userRouter.post('/signup', (req, res, next) => {
             </div>`
             sendEmail(req.body.email, "SAVIOR TECH | Confirm Email", message);
 
-            var smsConfirCode = codeGenerator(8, {type: 'number'});
             sendSms(req.body.phone, smsConfirCode);
-            
+
             res.statusCode = 200;
             res.setHeader('Content-Type', 'application/json');
             res.json({ success: true, message: "Signup successfully", user: user });
@@ -120,6 +123,32 @@ userRouter.get('/verify/:userId/:confirCode', (req, res, next) => {
     .catch(() => next(new Error("Something went wrong")));
 });
 // $$$$$$$$$$$$$$$$$$$ VERIFY EMAIL $$$$$$$$$$$$$$$$$$$
+
+
+// $$$$$$$$$$$$$$$$$$$ VERIFY SMS $$$$$$$$$$$$$$$$$$$
+userRouter.get('/verifysms/:smsCode', (req, res, next) => {
+  db.Users.update(
+    { confirSmsCode: null, status: "confirmed" },
+    { where: { confirSmsCode: req.params.smsCode } }
+  )
+    .then((user) => {
+      if (user[0] !== 0) {
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.json({ success: true, statusMsg: "Account verified successfully" });
+        console.log("Account verified successfully");
+
+      } else {
+        res.statusCode = 403;
+        res.setHeader('Content-Type', 'application/json');
+        res.json({ success: false, statusMsg: "Invalid confirmation code" });
+        console.log("invalid link");
+      }
+    },
+      err => next(err))
+    .catch(() => next(new Error("Something went wrong")));
+});
+// $$$$$$$$$$$$$$$$$$$ VERIFY SMS $$$$$$$$$$$$$$$$$$$
 
 
 // $$$$$$$$$$$$$$$$$$$ SIGNIN $$$$$$$$$$$$$$$$$$$
