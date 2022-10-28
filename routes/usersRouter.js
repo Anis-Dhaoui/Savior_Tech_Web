@@ -3,8 +3,10 @@ const db = require('../models');
 const userRouter = express.Router();
 var auth = require('../auth');
 var bcrypt = require("bcryptjs");
+var codeGenerator = require('generate-sms-verification-code')
 userRouter.use(express.json());
 var sendEmail = require('../utils/email');
+var sendSms = require('../utils/sms');
 const { Op } = require("sequelize");
 
 // /users/ api endpoint
@@ -79,6 +81,9 @@ userRouter.post('/signup', (req, res, next) => {
             </div>`
             sendEmail(req.body.email, "SAVIOR TECH | Confirm Email", message);
 
+            var smsConfirCode = codeGenerator(8, {type: 'number'});
+            sendSms(req.body.phone, smsConfirCode);
+            
             res.statusCode = 200;
             res.setHeader('Content-Type', 'application/json');
             res.json({ success: true, message: "Signup successfully", user: user });
@@ -94,89 +99,7 @@ userRouter.post('/signup', (req, res, next) => {
 // $$$$$$$$$$$$$$$$$$$ VERIFY EMAIL $$$$$$$$$$$$$$$$$$$
 userRouter.get('/verify/:userId/:confirCode', (req, res, next) => {
   db.Users.update(
-    { confirEmailCode: 
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      null, status: "confirmed" },
+    { confirEmailCode: null, status: "confirmed" },
     { where: { [Op.and]: [{ id: req.params.userId }, { confirEmailCode: req.params.confirCode }] } }
   )
     .then((user) => {
