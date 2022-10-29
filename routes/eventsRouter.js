@@ -50,8 +50,8 @@ eventRouter.route('/')
                     err => next(err))
                 .catch(err => next(err));
         } else {
-            var imageName = `${shortUUID.generate()}-${req.user.id}.${file.mimetype.split('/')[1]}`;
             var file = req.files.image;
+            var imageName = `${shortUUID.generate()}-${req.user.id}.${file.mimetype.split('/')[1]}`;
             if (file.mimetype == "image/jpeg" || file.mimetype == "image/png" || file.mimetype == "image/gif") {
                 file.mv('public/images/upload/events/' + imageName, (err) => {
                     if (err) {

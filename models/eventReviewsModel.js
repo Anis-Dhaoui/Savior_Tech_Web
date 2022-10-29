@@ -10,7 +10,7 @@ module.exports = (sequelize, DataTypes) => {
             allowNull: false
         },
         rating: {
-            type: DataTypes.STRING,
+            type: DataTypes.INTEGER,
         }
     });
     Reviews.associate = models => {
