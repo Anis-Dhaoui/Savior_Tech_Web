@@ -8,7 +8,6 @@ const shortUUID = require('short-uuid');
 const auth = require('../auth');
 const fs = require('fs');
 
-
 //For testing purpose
 // const reqUserId = "41b6a7e0-59bc-4528-ae7e-b3fbe64303a8";
 const reqUserId = "41b6a7e0-59bc-4528-ae7e-b3fbe64303b5";

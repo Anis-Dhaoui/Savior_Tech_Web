@@ -60,7 +60,7 @@ userRouter.post('/signup', (req, res, next) => {
       } else {
         const confirCode = auth.getToken({ email: req.body.email });
         const smsConfirCode = codeGenerator(6, { type: 'number' });
-        console.log(smsConfirCode);
+
         db.Users.create({
           fullName: req.body.fullName,
           avatar: req.body.avatar,

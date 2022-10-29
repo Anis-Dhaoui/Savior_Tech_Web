@@ -72,6 +72,8 @@ module.exports = (sequelize, DataTypes) => {
     });
     Users.associate = models => {
         Users.belongsToMany(models.Events, { through: models.Participants })
+        Users.hasMany(models.Reviews, { onDelete: "cascade" })
+
         Users.belongsTo(models.Roles, { onDelete: "cascade" })
 
         Users.hasMany(models.Publications, { onDelete: "cascade" })
