@@ -9,7 +9,7 @@ require("dotenv").config();
 
 
 var eventRouter = require('./routes/eventsRouter');
-var uploadEventimgsRouter = require('./routes/uploadEventsImgs');
+//var uploadEventimgsRouter = require('./routes/uploadEventsImgs');
 
 var userRouter = require('./routes/usersRouter');
 var roleRouter = require('./routes/roleRouter');
@@ -45,7 +45,7 @@ app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(fileUpload());
 app.use('/events', eventRouter);
-app.use('/eventimages', uploadEventimgsRouter);
+//app.use('/eventimages', uploadEventimgsRouter);
 
 app.use('/users', userRouter);
 app.use('/roles', roleRouter);
@@ -64,7 +64,6 @@ app.use('/aimes', AimesRouter);
 app.use(function(req, res, next) {
     next(createError(404));
 });
-
 // error handler
 app.use(function(err, req, res, next) {
     // set locals, only providing error in development

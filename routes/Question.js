@@ -1,14 +1,14 @@
 var express = require('express');
 var router = express.Router();
 var db = require('../models');
+var auth = require('../auth');
 
-router.post('/add', (req, res) => {
+router.post('/add', auth.verifyToken, (req, res) => {
     if (!req.files) {
         db.questions.create({
             description: req.body.description,
-            date: req.body.date,
             titre: req.body.titre,
-            UserId: req.body.UserId
+            UserId: req.user.id
         }).then(
             (p) => {
                 res.send(p);
@@ -26,10 +26,9 @@ router.post('/add', (req, res) => {
                 {
                     db.questions.create({
                         description: req.body.description,
-                        date: req.body.date,
                         titre: req.body.titre,
                         image: img_name,
-                        UserId: req.body.UserId
+                        UserId: req.user.id
                     }).then(
                         (p) => {
                             res.send(p);
@@ -47,15 +46,15 @@ router.get('/', function(req, res, next) {
         res.send(resp);
     });
 });
-router.delete('/remove/:id', (req, res) => {
-    db.questions.destroy({ where: { id: req.params.id } }).then(
+router.delete('/remove/:id', auth.verifyToken, (req, res) => {
+    db.questions.destroy({ where: { id: req.user.id } }).then(
         () => {
             res.send('removed');
         }
     );
 });
-router.put('/update/:id', (req, res) => {
-    db.questions.update(req.body, { where: { id: req.params.id } }).then(
+router.put('/update/:id', auth.verifyToken, (req, res) => {
+    db.questions.update(req.body, { where: { id: req.user.id} }).then(
         () => {
             res.send('updated');
         });
@@ -67,6 +66,15 @@ router.get('/detail/:id', function(req, res, next) {
     });
 });
 
-
+router.get('/search/:search', function (req, res, next) {
+    var search = req.params.search;
+    db.questions.findAll({
+      where: {
+        [Op.or]: [{ titre: { [Op.like]: `%${search}%` } }, { description: { [Op.like]: `%${search}%` } }],
+      }
+    }).then((resp) => {
+      res.send(resp);
+    });
+  });
 
 module.exports = router;
