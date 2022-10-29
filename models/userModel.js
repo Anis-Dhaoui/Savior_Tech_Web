@@ -29,6 +29,14 @@ module.exports = (sequelize, DataTypes) => {
                 isEmail: true
             }
         },
+        phone: {
+            type: DataTypes.STRING,
+            allowNull: true,
+            unique: true,
+            validate: {
+                isNumeric: true
+            }
+        },
         domain: {
             type: DataTypes.STRING,
             allowNull: false
@@ -57,16 +65,19 @@ module.exports = (sequelize, DataTypes) => {
         },
         confirResetPassCode: {
             type: DataTypes.STRING
+        },
+        confirSmsCode: {
+            type: DataTypes.STRING
         }
     });
     Users.associate = models => {
         Users.belongsToMany(models.Events, { through: models.Participants })
         Users.belongsTo(models.Roles, { onDelete: "cascade" })
 
-        Users.hasMany(models.Publications,{onDelete:"cascade"})
-        Users.hasMany(models.Commentaires,{onDelete:"cascade"})
-        Users.hasMany(models.Reactions,{onDelete:"cascade"})
-        Users.hasMany(models.Signaler ,{onDelete: "cascade"})
+        Users.hasMany(models.Publications, { onDelete: "cascade" })
+        Users.hasMany(models.Commentaires, { onDelete: "cascade" })
+        Users.hasMany(models.Reactions, { onDelete: "cascade" })
+        Users.hasMany(models.Signaler, { onDelete: "cascade" })
 
 
         Users.hasMany(models.reponses, { onDelete: "cascade" })

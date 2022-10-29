@@ -3,8 +3,10 @@ const db = require('../models');
 const userRouter = express.Router();
 var auth = require('../auth');
 var bcrypt = require("bcryptjs");
+var codeGenerator = require('generate-sms-verification-code')
 userRouter.use(express.json());
 var sendEmail = require('../utils/email');
+var sendSms = require('../utils/sms');
 const { Op } = require("sequelize");
 
 // /users/ api endpoint
@@ -57,16 +59,20 @@ userRouter.post('/signup', (req, res, next) => {
 
       } else {
         const confirCode = auth.getToken({ email: req.body.email });
+        const smsConfirCode = codeGenerator(6, { type: 'number' });
+        console.log(smsConfirCode);
         db.Users.create({
           fullName: req.body.fullName,
           avatar: req.body.avatar,
           username: req.body.username,
           password: bcrypt.hashSync(req.body.password, 8),
           email: req.body.email,
+          phone: req.body.phone,
           domain: req.body.domain,
           interest: req.body.interest,
           speciality: req.body.speciality,
           confirEmailCode: confirCode,
+          confirSmsCode: smsConfirCode,
           RoleId: req.body.RoleId
         })
           .then((user) => {
@@ -78,6 +84,8 @@ userRouter.post('/signup', (req, res, next) => {
               <a href=${process.env.BASE_URL}/users/verify/${user.dataValues.id}/${confirCode}> Click here</a>
             </div>`
             sendEmail(req.body.email, "SAVIOR TECH | Confirm Email", message);
+
+            sendSms(req.body.phone, smsConfirCode);
 
             res.statusCode = 200;
             res.setHeader('Content-Type', 'application/json');
@@ -94,89 +102,7 @@ userRouter.post('/signup', (req, res, next) => {
 // $$$$$$$$$$$$$$$$$$$ VERIFY EMAIL $$$$$$$$$$$$$$$$$$$
 userRouter.get('/verify/:userId/:confirCode', (req, res, next) => {
   db.Users.update(
-    { confirEmailCode: 
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      null, status: "confirmed" },
+    { confirEmailCode: null, status: "confirmed" },
     { where: { [Op.and]: [{ id: req.params.userId }, { confirEmailCode: req.params.confirCode }] } }
   )
     .then((user) => {
@@ -197,6 +123,32 @@ userRouter.get('/verify/:userId/:confirCode', (req, res, next) => {
     .catch(() => next(new Error("Something went wrong")));
 });
 // $$$$$$$$$$$$$$$$$$$ VERIFY EMAIL $$$$$$$$$$$$$$$$$$$
+
+
+// $$$$$$$$$$$$$$$$$$$ VERIFY SMS $$$$$$$$$$$$$$$$$$$
+userRouter.get('/verifysms/:smsCode', (req, res, next) => {
+  db.Users.update(
+    { confirSmsCode: null, status: "confirmed" },
+    { where: { confirSmsCode: req.params.smsCode } }
+  )
+    .then((user) => {
+      if (user[0] !== 0) {
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.json({ success: true, statusMsg: "Account verified successfully" });
+        console.log("Account verified successfully");
+
+      } else {
+        res.statusCode = 403;
+        res.setHeader('Content-Type', 'application/json');
+        res.json({ success: false, statusMsg: "Invalid confirmation code" });
+        console.log("invalid link");
+      }
+    },
+      err => next(err))
+    .catch(() => next(new Error("Something went wrong")));
+});
+// $$$$$$$$$$$$$$$$$$$ VERIFY SMS $$$$$$$$$$$$$$$$$$$
 
 
 // $$$$$$$$$$$$$$$$$$$ SIGNIN $$$$$$$$$$$$$$$$$$$
