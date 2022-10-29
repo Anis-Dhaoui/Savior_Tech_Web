@@ -9,7 +9,6 @@ require("dotenv").config();
 
 
 var eventRouter = require('./routes/eventsRouter');
-
 var userRouter = require('./routes/usersRouter');
 var roleRouter = require('./routes/roleRouter');
 
@@ -62,7 +61,6 @@ app.use('/aimes', AimesRouter);
 app.use(function(req, res, next) {
     next(createError(404));
 });
-
 // error handler
 app.use(function(err, req, res, next) {
     // set locals, only providing error in development

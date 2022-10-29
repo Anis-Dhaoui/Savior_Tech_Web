@@ -1,10 +1,14 @@
 var express = require('express');
 var router = express.Router();
 var db = require('../models');
+var auth = require('../auth');
 
-
-router.post('/add', (req, res) => {
-    db.reponses.create(req.body).then(
+router.post('/add', auth.verifyToken, (req, res) => {
+    db.reponses.create({
+        message: req.body.message,
+        questionId : req.body.questionId,
+        UserId: req.user.id
+}).then(
         (p) => {
             res.send(p);
         }
@@ -17,15 +21,15 @@ router.get('/', function(req, res, next) {
         res.send(resp);
     });
 });
-router.delete('/remove/:id', (req, res) => {
-    db.reponses.destroy({ where: { id: req.params.id } }).then(
+router.delete('/remove/:id', auth.verifyToken, (req, res) => {
+    db.reponses.destroy({ where: { id: req.user.id} }).then(
         () => {
             res.send('removed');
         }
     );
 });
-router.put('/update/:id', (req, res) => {
-    db.reponses.update(req.body, { where: { id: req.params.id } }).then(
+router.put('/update/:id',  auth.verifyToken,(req, res) => {
+    db.reponses.update(req.body, { where: { id: req.user.id} }).then(
         () => {
             res.send('updated');
         });

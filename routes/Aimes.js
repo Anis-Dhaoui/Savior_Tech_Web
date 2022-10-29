@@ -1,38 +1,36 @@
 var express = require('express');
 var router = express.Router();
 var db = require('../models');
+var auth = require('../auth');
 
-
-router.post('/add', (req, res) => {
-    db.aimes.create(req.body).then(
-        (p) => {
-            res.send(p);
+router.post('/add', auth.verifyToken, (req, res) => {
+    db.aimes.findOne({ where: { questionId : req.body.questionId,UserId: req.user.id } }).then((resp) => {
+        if (!resp) {
+            db.aimes.create({
+                questionId : req.body.questionId,
+                UserId: req.user.id
+        }).then(
+                (p) => {
+                    res.send(p);
+                }
+            );
         }
-    );
-});
-
-
-router.get('/fetch', function(req, res, next) {
-    db.aimes.findAll().then((resp) => {
-        res.send(resp);
+        else{
+            res.send("j'aime")
+        }
     });
+
 });
-router.delete('/remove/:id', (req, res) => {
-    db.aimes.destroy({ where: { id: req.params.id } }).then(
+
+router.delete('/remove/:id',auth.verifyToken, (req, res) => {
+    db.aimes.destroy({ where: { questionId : req.body.questionId,UserId: req.user.id} }).then(
         () => {
             res.send('removed');
         }
     );
 });
-router.put('/update/:id', (req, res) => {
-    db.aimes.update(req.body, { where: { id: req.params.id } }).then(
-        () => {
-            res.send('updated');
-        });
-
-});
 router.get('/detail/:id', function(req, res, next) {
-    db.aimes.findOne({ where: { id: req.params.id } }).then((resp) => {
+    db.aimes.findAndCountAll({ where: { questionId : req.params.id } }).then((resp) => {
         res.send(resp);
     });
 });
