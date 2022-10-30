@@ -123,6 +123,30 @@ userRouter.get('/verify/:userId/:confirCode', (req, res, next) => {
     .catch(() => next(new Error("Something went wrong")));
 });
 // $$$$$$$$$$$$$$$$$$$ VERIFY EMAIL $$$$$$$$$$$$$$$$$$$
+//******************appload image**********************
+userRouter.get('/verifyimage/', (req, res, next) => {
+  if (!req.files) {
+    USER.create(req.body)
+        .then((user) => {
+
+            res.statusCode = 200;
+            res.setHeader('Content-Type', 'application/json');
+            res.json({ success: true, message: "user added successfully", user: user });
+            
+        },
+            err => next(err))
+        .catch(err => next(err));
+} else {
+    var file = req.files.image;
+    var imageName = `${shortUUID.generate()}-${req.user.id}.${file.mimetype.split('/')[1]}`;
+    if (file.mimetype == "image/jpeg" || file.mimetype == "image/png" || file.mimetype == "image/gif") {
+        file.mv('public/images/upload/users/' + imageName, (err) => {
+            if (err) {
+                next(err)
+            }
+          })
+        }}})
+//******************appload image**********************
 
 
 // $$$$$$$$$$$$$$$$$$$ VERIFY SMS $$$$$$$$$$$$$$$$$$$
@@ -235,6 +259,6 @@ userRouter.route('/:userId')
       },
         err => next(err))
       .catch(err => next(err))
-  });
-
+      });
+    
 module.exports = userRouter;
