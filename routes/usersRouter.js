@@ -11,7 +11,13 @@ const { Op } = require("sequelize");
 
 // /users/ api endpoint
 userRouter.get('/', (req, res, next) => {
-  db.Users.findAll({ include: db.Roles })
+  db.Users.findAll({
+    attributes: { exclude: ['RoleId'] },
+    include: {
+      model: db.Roles,
+      attributes: ['roleName']
+    }
+  })
     .then((users) => {
       if (users !== null) {
         res.statusCode = 200;
@@ -127,25 +133,27 @@ userRouter.get('/verify/:userId/:confirCode', (req, res, next) => {
 userRouter.get('/verifyimage/', (req, res, next) => {
   if (!req.files) {
     USER.create(req.body)
-        .then((user) => {
+      .then((user) => {
 
-            res.statusCode = 200;
-            res.setHeader('Content-Type', 'application/json');
-            res.json({ success: true, message: "user added successfully", user: user });
-            
-        },
-            err => next(err))
-        .catch(err => next(err));
-} else {
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.json({ success: true, message: "user added successfully", user: user });
+
+      },
+        err => next(err))
+      .catch(err => next(err));
+  } else {
     var file = req.files.image;
     var imageName = `${shortUUID.generate()}-${req.user.id}.${file.mimetype.split('/')[1]}`;
     if (file.mimetype == "image/jpeg" || file.mimetype == "image/png" || file.mimetype == "image/gif") {
-        file.mv('public/images/upload/users/' + imageName, (err) => {
-            if (err) {
-                next(err)
-            }
-          })
-        }}})
+      file.mv('public/images/upload/users/' + imageName, (err) => {
+        if (err) {
+          next(err)
+        }
+      })
+    }
+  }
+})
 //******************appload image**********************
 
 
@@ -177,7 +185,12 @@ userRouter.get('/verifysms/:smsCode', (req, res, next) => {
 
 // $$$$$$$$$$$$$$$$$$$ SIGNIN $$$$$$$$$$$$$$$$$$$
 userRouter.post('/signin', (req, res, next) => {
-  db.Users.findOne({ where: { username: req.body.username }, include: db.Roles, raw: true, nest: true })
+  db.Users.findOne({
+    where: { username: req.body.username },
+    include: db.Roles,
+    raw: true,
+    nest: true
+  })
     .then((user) => {
       if (!user) {
         res.statusCode = 404;
@@ -259,6 +272,6 @@ userRouter.route('/:userId')
       },
         err => next(err))
       .catch(err => next(err))
-      });
-    
+  });
+
 module.exports = userRouter;
