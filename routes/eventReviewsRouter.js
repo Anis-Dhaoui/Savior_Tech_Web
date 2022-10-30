@@ -1,8 +1,8 @@
 const express = require('express');
 const db = require('../models');
 const REVIEWS = db.Reviews;
+const EVENTS = db.Events;
 const USER = db.Users;
-const REVIEW = db.Reviews;
 const reviewRouter = express.Router();
 reviewRouter.use(express.json());
 var auth = require('../auth');
@@ -17,10 +17,10 @@ reviewRouter.route('/')
                     // attributes: { exclude: ['password'] },
                     attributes: ['id', 'fullName', 'username', 'avatar']
                 },
-                // {
-                //     model: REVIEW,
-                //     attributes: ['id', 'event_title']
-                // }
+                {
+                    model: EVENTS,
+                    attributes: ['id', 'event_title']
+                }
             ]
         })
             .then((reviews) => {
