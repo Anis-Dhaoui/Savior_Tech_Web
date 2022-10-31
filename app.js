@@ -7,6 +7,7 @@ var logger = require('morgan');
 var bodyParser = require("body-parser");
 require("dotenv").config();
 
+var cronjob = require('./utils/reminder');
 
 var eventRouter = require('./routes/eventsRouter');
 var reviewRouter = require('./routes/eventReviewsRouter');
