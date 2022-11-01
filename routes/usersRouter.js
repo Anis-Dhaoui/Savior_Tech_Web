@@ -285,15 +285,40 @@ userRouter.route('/:userId')
       .catch(err => next(err))
   })
 
-  .delete(auth.verifyToken, (req, res, next) => {
-    db.Users.destroy({ where: { id: req.user.id } })
+  .delete(auth.verifyToken, auth.verifyAdmin, (req, res, next) => {
+    db.Users.destroy({ where: { id: req.user.id }, raw:true })
       .then((user) => {
-        res.statusCode = 200;
-        res.setHeader('Content-Type', 'application/json');
-        res.json({ success: true, message: "User deleted successfully", deletedUser: user });
+        if (user.userImage != null) {
+          var pathImage = `public/images/upload/events/${user.userImage}`;
+
+          if (fs.existsSync(pathImage)) {
+              if (user.userImage.includes(req.user.id)) {
+                  fs.unlink(pathImage, err => {
+                      if (err) next(err);
+                  });
+              } else {
+                  console.log("Failed Operation!!");
+              }
+          } else {
+              console.log("image doesn't exist");
+          }
+      }
       },
         err => next(err))
       .catch(err => next(err))
+      db.Users.destroy({ where: { id: req.params.userId } })
+      .then((user) => {
+
+          res.statusCode = 200;
+          res.setHeader('Content-Type', 'application/json');
+          res.json({ success: true, message: "Event deleted successfully", deletedEvent: user });
+      },
+          err => next(err))
+      .catch(err => next(err))
+
+
+      
+
   });
 
 module.exports = userRouter;
