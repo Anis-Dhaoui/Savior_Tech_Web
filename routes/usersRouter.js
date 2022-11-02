@@ -320,7 +320,22 @@ userRouter.route('/:userId')
 
 
 
-  });
+  })
+
+
+  //$$$$$$$$$$$$$$$ block user $$$$$$$$$$$$$$$$$$$$$$//
+
+  userRouter.put('/block/:userId', auth.verifyToken, auth.verifyAdmin, (req, res, next) => {
+    db.Users.update({status: "blocked"}, { where: { id: req.params.userId } })
+      .then((user) => {
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.json({ success: true, message: "User blocked successfully", updatedUser: user });
+      },
+        err => next(err))
+      .catch(err => next(err))
+  }) 
+  //$$$$$$$$$$$$$$$ block user $$$$$$$$$$$$$$$$$$$$$$//
 
 
 
