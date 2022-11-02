@@ -8,10 +8,9 @@ const shortUUID = require('short-uuid');
 const auth = require('../auth');
 const fs = require('fs');
 
-
 //For testing purpose
 // const reqUserId = "41b6a7e0-59bc-4528-ae7e-b3fbe64303a8";
-const reqUserId = "41b6a7e0-59bc-4528-ae7e-b3fbe64303b5";
+// const reqUserId = "41b6a7e0-59bc-4528-ae7e-b3fbe64303b5";
 
 eventRouter.use(express.json());
 
@@ -22,8 +21,9 @@ eventRouter.route('/')
             include: [
                 {
                     model: USER,
-                    attributes: { exclude: ['password'] },
-                    // attributes: ['id', 'fullName', 'username']
+                    // attributes: { exclude: ['password'] },
+                    attributes: ['id', 'fullName', 'avatar', 'domain'],
+                    through: { attributes: [] }
                 }
             ]
         })
@@ -51,8 +51,8 @@ eventRouter.route('/')
                     err => next(err))
                 .catch(err => next(err));
         } else {
-            var imageName = `${shortUUID.generate()}-${req.user.id}.${file.mimetype.split('/')[1]}`;
             var file = req.files.image;
+            var imageName = `${shortUUID.generate()}-${req.user.id}.${file.mimetype.split('/')[1]}`;
             if (file.mimetype == "image/jpeg" || file.mimetype == "image/png" || file.mimetype == "image/gif") {
                 file.mv('public/images/upload/events/' + imageName, (err) => {
                     if (err) {
@@ -85,8 +85,8 @@ eventRouter.route('/:eventId')
             include: [
                 {
                     model: USER,
-                    attributes: { exclude: ['password'] },
-                    // attributes: ['id', 'fullName', 'username']
+                    attributes: ['id', 'fullName', 'avatar', 'domain'],
+                    through: { attributes: [] }
                 }
             ]
         })
@@ -147,31 +147,36 @@ eventRouter.route('/:eventId')
     })
 
 
+    
+// $$$$$$$$$$$$$$$$$$$$ PARTICIPATE/UNPARTICPATE $$$$$$$$$$$$$$$$$$$$$$$$$$
+eventRouter.post('/participate/:eventId', auth.verifyToken, (req, res, next) => {
+    var obj = {
+        "UserId": req.user.id,
+        "EventId": req.params.eventId
+    }
+    PARTICIPANT.create(obj)
+        .then((result) => {
+            res.statusCode = 200;
+            res.setHeader('Content-Type', 'application/json');
+            res.json({ success: true, message: "Participated successfully", result: result });
+        },
+            err => {
+                // console.log(err.parent.code);
+                // if err.parent.code === "ER_DUP_ENTRY" that means there is a duplicate key
+                if (err.parent.code && err.parent.code === "ER_DUP_ENTRY") {
+                    PARTICIPANT.destroy({ where: { UserId: req.user.id, EventId: req.params.eventId } })
+                        .then(() => {
+                            res.statusCode = 200;
+                            res.setHeader('Content-Type', 'application/json');
+                            res.json({ success: true, message: "Your particpation has been canceled successfully" });
+                        },
+                            err => next(err))
+                        .catch(err => next(err));
+                } else
+                    next(err);
+            })
+        .catch(err => next(err));
+})
 
-
-    //$$$$$$$$$$$$$$// USER PARTICIPATE TO EVENT //$$$$$$$$$$$$$$//
-    .post((req, res, next) => {
-        var obj = {
-            "UserId": reqUserId,
-            "EventId": req.params.eventId
-        }
-        PARTICIPANT.create(obj)
-            .then((result) => {
-                res.statusCode = 200;
-                res.setHeader('Content-Type', 'application/json');
-                res.json({ success: true, message: "Participated successfully", result: result });
-            },
-                err => {
-                    // console.log(err.parent.code);
-                    // if err.parent.code === "ER_DUP_ENTRY" that means there is a duplicate key
-                    if (err.parent.code && err.parent.code === "ER_DUP_ENTRY") {
-                        res.statusCode = 409;
-                        res.setHeader('Content-Type', 'application/json');
-                        res.json({ success: false, message: "Already participated" });
-                    } else
-                        next(err);
-                })
-            .catch(err => next(err));
-    })
 
 module.exports = eventRouter;

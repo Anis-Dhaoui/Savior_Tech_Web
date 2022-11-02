@@ -54,6 +54,7 @@ module.exports = (sequelize, DataTypes) => {
     );
     Events.associate = models => {
         Events.belongsToMany(models.Users, { through: models.Participants })
+        Events.hasMany(models.Reviews, { onDelete: "cascade" })
     }
     return Events;
 }
