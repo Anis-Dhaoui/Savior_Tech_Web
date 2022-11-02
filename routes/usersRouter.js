@@ -87,7 +87,7 @@ userRouter.post('/signup', (req, res, next) => {
             domain: req.body.domain,
             interest: req.body.interest,
             speciality: req.body.speciality,
-            confirEmailCode: confirCode,
+            confirResetPassCode: confirCode,
             confirSmsCode: smsConfirCode,
             RoleId: req.body.RoleId
           })
@@ -125,7 +125,7 @@ userRouter.post('/signup', (req, res, next) => {
                   domain: req.body.domain,
                   interest: req.body.interest,
                   speciality: req.body.speciality,
-                  confirEmailCode: confirCode,
+                  confirResetPassCode: confirCode,
                   confirSmsCode: smsConfirCode,
                   RoleId: req.body.RoleId
                 })
@@ -161,8 +161,8 @@ userRouter.post('/signup', (req, res, next) => {
 // $$$$$$$$$$$$$$$$$$$ VERIFY EMAIL $$$$$$$$$$$$$$$$$$$ /fhjjh/65285926
 userRouter.get('/verify/:userId/:confirCode', (req, res, next) => {
   db.Users.update(
-    { confirEmailCode: null, status: "confirmed" }, 
-    { where: { [Op.and]: [{ id: req.params.userId }, { confirEmailCode: req.params.confirCode }] } }
+    { confirResetPassCode: null, status: "confirmed" }, 
+    { where: { [Op.and]: [{ id: req.params.userId }, { confirResetPassCode: req.params.confirCode }] } }
   )
     .then((user) => {
       if (user[0] !== 0) {
@@ -356,44 +356,32 @@ userRouter.post('/forgotpassword/sendlink', (req, res, next) => {
           res.statusCode = 200;
           res.setHeader('Content-Type', 'application/json');
           res.json({ success: true, statusMsg: "Reset password link sent successfully to " + user.email });
-
+//http://localhost:3000/users/forgotpassword/resetpassword/74bb4723-e580-4fb8-bfcb-4a2ebf9bfc0e/eyJhbGciOiJ
         }, err => next(err))
       }
     })
 })
 
-// userRouter.post('/forgotpassword/resetpassword/:userId/:confirResetPasswordCode', cors.corsWithOpts, (req, res, next) => {
+userRouter.get('/forgotpassword/resetpassword/:userId/:confirPassCode', (req, res, next) => {
+  db.Users.update(
+    { confirResetPassCode: null, password : bcrypt.hashSync(req.body.newPassword, 8)  }, 
+    { where: { [Op.and]: [{ id: req.params.userId }, { confirResetPassCode: req.params.confirPassCode }] } }
+  )
+    .then((user) => {
+      if (user[0] !== 0) {
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.json({ success: true, statusMsg: "Password changed successfully" });
+        
 
-//   User.findOne({ _id: req.params.userId, confirResetPasswordCode: req.params.confirResetPasswordCode })
-//   .then((user) =>{
-//     if (user){
-//       user.setPassword(req.body.newPassword, (err) =>{
-//         if(err){
-//           res.status(500).send({success: false, statusMsg: err });
-//         }else{
-//           user.save(err =>{
-//             if (err){
-//               res.status(500).send({success: false, statusMsg: err });
-//             }else{
-//               res.statusCode = 200;
-//               res.setHeader('Content-Type', 'application/json');
-//               res.json({ success: true, statusMsg: "Your password changed successfully" });
-//             }
-//           })
-//         }
-//       });
-//       db.Users.updateOne(
-//         { _id: req.params.userId },
-//         { $unset: { confirResetPasswordCode: ""} }
-//       ).exec();
-//     }else{
-//       res.statusCode = 403;
-//       res.setHeader('Content-Type', 'application/json');
-//       res.json({ success: false, statusMsg: "Invalid reset password link" });
-//       console.log("invalid link");
-//     }
-//   })
-//   .catch(() => next(new Error("Something went wrong")));
-// });
-
+      } else {
+        res.statusCode = 403;
+        res.setHeader('Content-Type', 'application/json');
+        res.json({ success: false, statusMsg: "Invalid confirmation link" });
+        console.log("invalid link");
+      }
+    },
+      err => next(err))
+    .catch(() => next(new Error("Something went wrong")));
+});
 module.exports = userRouter;
