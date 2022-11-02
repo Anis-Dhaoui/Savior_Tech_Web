@@ -14,32 +14,35 @@ const fs = require('fs');
 
 eventRouter.use(express.json());
 
-// /events/ api endpoint
-eventRouter.route('/')
-    .get((req, res, next) => {
-        EVENT.findAll({
-            include: [
-                {
-                    model: USER,
-                    // attributes: { exclude: ['password'] },
-                    attributes: ['id', 'fullName', 'avatar', 'domain'],
-                    through: { attributes: [] }
-                }
-            ]
-        })
-            .then((events) => {
-                if (events !== null) {
-                    res.statusCode = 200;
-                    res.setHeader('Content-Type', 'application/json');
-                    res.json(events);
-                } else {
-                    err = new Error(err);
-                    next(err);
-                }
-            },
-                err => next(err))
-            .catch(err => next(err))
+
+eventRouter.get('/page/:pagenb', (req, res, next) => {
+    const limit = 5;
+    EVENT.findAll({
+        offset: (req.params.pagenb - 1) * limit,
+        limit: limit,
+        include: [
+            {
+                model: USER,
+                // attributes: { exclude: ['password'] },
+                attributes: ['id', 'fullName', 'avatar', 'domain'],
+                through: { attributes: [] }
+            }
+        ]
     })
+        .then((events) => {
+            if (events !== null) {
+                res.statusCode = 200;
+                res.setHeader('Content-Type', 'application/json');
+                res.json(events);
+            } else {
+                err = new Error(err);
+                next(err);
+            }
+        },
+            err => next(err))
+        .catch(err => next(err))
+})
+eventRouter.route('/')
     .post(auth.verifyToken, auth.verifyAdmin, (req, res, next) => {
         if (!req.files) {
             EVENT.create(req.body)
@@ -147,7 +150,7 @@ eventRouter.route('/:eventId')
     })
 
 
-    
+
 // $$$$$$$$$$$$$$$$$$$$ PARTICIPATE/UNPARTICPATE $$$$$$$$$$$$$$$$$$$$$$$$$$
 eventRouter.post('/participate/:eventId', auth.verifyToken, (req, res, next) => {
     var obj = {
