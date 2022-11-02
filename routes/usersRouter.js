@@ -7,16 +7,16 @@ var codeGenerator = require('generate-sms-verification-code')
 userRouter.use(express.json());
 var sendEmail = require('../utils/email');
 var sendSms = require('../utils/sms');
-const { Op } = require("sequelize");
+const { Op, where } = require("sequelize");
 const shortUUID = require('short-uuid');
 const fs = require('fs');
 
 
 // /users/ api endpoint
 userRouter.get('/chunk/:chunknbr', (req, res, next) => {
-const limit = 3;
+  const limit = 3;
   db.Users.findAll({
-    offset: (req.params.chunknbr - 1)*limit,
+    offset: (req.params.chunknbr - 1) * limit,
     limit: limit,
 
     attributes: { exclude: ['RoleId'] },
@@ -161,7 +161,7 @@ userRouter.post('/signup', (req, res, next) => {
 // $$$$$$$$$$$$$$$$$$$ VERIFY EMAIL $$$$$$$$$$$$$$$$$$$ /fhjjh/65285926
 userRouter.get('/verify/:userId/:confirCode', (req, res, next) => {
   db.Users.update(
-    { confirEmailCode: null, status: "confirmed" },
+    { confirEmailCode: null, status: "confirmed" }, 
     { where: { [Op.and]: [{ id: req.params.userId }, { confirEmailCode: req.params.confirCode }] } }
   )
     .then((user) => {
@@ -321,5 +321,79 @@ userRouter.route('/:userId')
 
 
   });
+
+
+
+
+
+
+
+//$$$$$$$$$$$$$$$$$$$$$$$$// RESET PASSWORD //$$$$$$$$$$$$$$$$$$$$$$$$//
+userRouter.post('/forgotpassword/sendlink', (req, res, next) => {
+  db.Users.findOne({ where: { email: req.body.email } })
+    .then((user) => {
+      if (!user) {
+        return res.status(404).json({ success: false, statusMsg: 'Email not found' });
+      }
+      else if (user.status != "confirmed") {
+        return res.status(403).json({ success: false, statusMsg: 'This account is not verified yet! Please verify your email first.' });
+      }
+      else {
+        const confirResetPasswordCode = auth.getToken({ email: user.email });
+
+        db.Users.update(
+          { confirResetPassCode: confirResetPasswordCode },
+          { where: { email: user.email } }
+        ).then(() => {
+          const message =
+            `<div>
+          <h1>Email Reset Password</h1>
+          <h2>Hello ${user.fullName}</h2>
+          <p>You or someone else requested to reset your password, if it was you, please click the link below to reset your password, othwise ignore this email</p>
+          <a href= ${process.env.BASE_URL}/users/forgotpassword/resetpassword/${user.id}/${confirResetPasswordCode}> Click here</a>
+        </div>`
+          sendEmail(user.email, "SAVIOR TECH | Reset Password", message)
+          res.statusCode = 200;
+          res.setHeader('Content-Type', 'application/json');
+          res.json({ success: true, statusMsg: "Reset password link sent successfully to " + user.email });
+
+        }, err => next(err))
+      }
+    })
+})
+
+// userRouter.post('/forgotpassword/resetpassword/:userId/:confirResetPasswordCode', cors.corsWithOpts, (req, res, next) => {
+
+//   User.findOne({ _id: req.params.userId, confirResetPasswordCode: req.params.confirResetPasswordCode })
+//   .then((user) =>{
+//     if (user){
+//       user.setPassword(req.body.newPassword, (err) =>{
+//         if(err){
+//           res.status(500).send({success: false, statusMsg: err });
+//         }else{
+//           user.save(err =>{
+//             if (err){
+//               res.status(500).send({success: false, statusMsg: err });
+//             }else{
+//               res.statusCode = 200;
+//               res.setHeader('Content-Type', 'application/json');
+//               res.json({ success: true, statusMsg: "Your password changed successfully" });
+//             }
+//           })
+//         }
+//       });
+//       db.Users.updateOne(
+//         { _id: req.params.userId },
+//         { $unset: { confirResetPasswordCode: ""} }
+//       ).exec();
+//     }else{
+//       res.statusCode = 403;
+//       res.setHeader('Content-Type', 'application/json');
+//       res.json({ success: false, statusMsg: "Invalid reset password link" });
+//       console.log("invalid link");
+//     }
+//   })
+//   .catch(() => next(new Error("Something went wrong")));
+// });
 
 module.exports = userRouter;
