@@ -9,6 +9,7 @@ var sendEmail = require('../utils/email');
 var sendSms = require('../utils/sms');
 const { Op } = require("sequelize");
 const shortUUID = require('short-uuid');
+const fs = require('fs');
 
 
 // /users/ api endpoint
@@ -70,7 +71,7 @@ userRouter.post('/signup', (req, res, next) => {
         const confirCode = auth.getToken({ email: req.body.email });
         const smsConfirCode = codeGenerator(6, { type: 'number' });
 
-       
+
 
         if (!req.files) {
           db.Users.create({
@@ -88,15 +89,15 @@ userRouter.post('/signup', (req, res, next) => {
           })
             .then((user) => {
               const message =
-              `<div>
+                `<div>
             <h1>Email Confirmation</h1>
             <h2>Hello ${req.body.fullName}</h2>
             <p>Thank you for subscribing. Please confirm your email by clicking on the following link</p>
             <a href=${process.env.BASE_URL}/users/verify/${user.dataValues.id}/${confirCode}> Click here</a>
           </div>`
-            sendEmail(req.body.email, "SAVIOR TECH | Confirm Email", message);
-    
-            // sendSms(req.body.phone, smsConfirCode);
+              sendEmail(req.body.email, "SAVIOR TECH | Confirm Email", message);
+
+              // sendSms(req.body.phone, smsConfirCode);
               res.statusCode = 200;
               res.setHeader('Content-Type', 'application/json');
               res.json({ success: true, message: "Signup successfully", user: user });
@@ -126,15 +127,15 @@ userRouter.post('/signup', (req, res, next) => {
                 })
                   .then((user) => {
                     const message =
-                    `<div>
+                      `<div>
                   <h1>Email Confirmation</h1>
                   <h2>Hello ${req.body.fullName}</h2>
                   <p>Thank you for subscribing. Please confirm your email by clicking on the following link</p>
                   <a href=${process.env.BASE_URL}/users/verify/${user.dataValues.id}/${confirCode}> Click here</a>
                 </div>`
-                  sendEmail(req.body.email, "SAVIOR TECH | Confirm Email", message);
-          
-                  // sendSms(req.body.phone, smsConfirCode);
+                    sendEmail(req.body.email, "SAVIOR TECH | Confirm Email", message);
+
+                    // sendSms(req.body.phone, smsConfirCode);
                     res.statusCode = 200;
                     res.setHeader('Content-Type', 'application/json');
                     res.json({ success: true, message: "Signup successfully", user: user });
@@ -286,38 +287,34 @@ userRouter.route('/:userId')
   })
 
   .delete(auth.verifyToken, auth.verifyAdmin, (req, res, next) => {
-    db.Users.destroy({ where: { id: req.user.id }, raw:true })
+    db.Users.findOne({ where: { id: req.params.userId }, raw: true })
       .then((user) => {
-        if (user.userImage != null) {
-          var pathImage = `public/images/upload/events/${user.userImage}`;
+        if (user.avatar != null) {
+          var pathImage = `public/images/upload/users/${user.avatar}`;
 
           if (fs.existsSync(pathImage)) {
-              if (user.userImage.includes(req.user.id)) {
-                  fs.unlink(pathImage, err => {
-                      if (err) next(err);
-                  });
-              } else {
-                  console.log("Failed Operation!!");
-              }
+            fs.unlink(pathImage, err => {
+              if (err) next(err);
+            });
           } else {
-              console.log("image doesn't exist");
+            console.log("image doesn't exist");
           }
-      }
+        }
       },
         err => next(err))
       .catch(err => next(err))
-      db.Users.destroy({ where: { id: req.params.userId } })
+    db.Users.destroy({ where: { id: req.params.userId } })
       .then((user) => {
 
-          res.statusCode = 200;
-          res.setHeader('Content-Type', 'application/json');
-          res.json({ success: true, message: "Event deleted successfully", deletedEvent: user });
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.json({ success: true, message: "User deleted successfully", deletedUser: user });
       },
-          err => next(err))
+        err => next(err))
       .catch(err => next(err))
 
 
-      
+
 
   });
 
