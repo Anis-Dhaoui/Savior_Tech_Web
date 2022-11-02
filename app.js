@@ -20,6 +20,8 @@ var CommentairesRouter = require('./routes/commentaires');
 var ReactionsRouter = require('./routes/reactions');
 var SignalerRouter = require('./routes/Signaler');
 
+//var ReclamationRouter = require('./routes/reclamation');
+
 var QuestionsRouter = require('./routes/Question');
 var ReponsesRouter = require('./routes/Reponses');
 var AimesRouter = require('./routes/Aimes');
@@ -56,6 +58,8 @@ app.use('/publications', publicationsRouter);
 app.use('/commentaires', CommentairesRouter);
 app.use('/reactions', ReactionsRouter);
 app.use('/signaler',SignalerRouter);
+
+//app.use('/reclamation',ReclamationRouter);
 
 
 app.use('/questions', QuestionsRouter);
