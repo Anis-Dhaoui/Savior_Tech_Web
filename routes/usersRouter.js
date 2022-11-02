@@ -105,7 +105,7 @@ userRouter.post('/signup', (req, res, next) => {
 });
 // $$$$$$$$$$$$$$$$$$$ SIGNUP $$$$$$$$$$$$$$$$$$$
 
-// $$$$$$$$$$$$$$$$$$$ VERIFY EMAIL $$$$$$$$$$$$$$$$$$$
+// $$$$$$$$$$$$$$$$$$$ VERIFY EMAIL $$$$$$$$$$$$$$$$$$$ /fhjjh/65285926
 userRouter.get('/verify/:userId/:confirCode', (req, res, next) => {
   db.Users.update(
     { confirEmailCode: null, status: "confirmed" },
