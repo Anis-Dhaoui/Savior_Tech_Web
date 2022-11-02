@@ -13,8 +13,12 @@ const fs = require('fs');
 
 
 // /users/ api endpoint
-userRouter.get('/', (req, res, next) => {
+userRouter.get('/chunk/:chunknbr', (req, res, next) => {
+const limit = 3;
   db.Users.findAll({
+    offset: (req.params.chunknbr - 1)*limit,
+    limit: limit,
+
     attributes: { exclude: ['RoleId'] },
     include: {
       model: db.Roles,
