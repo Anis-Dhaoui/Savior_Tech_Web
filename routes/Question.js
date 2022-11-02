@@ -2,7 +2,7 @@ var express = require('express');
 var router = express.Router();
 var db = require('../models');
 var auth = require('../auth');
-
+const shortUUID = require('short-uuid');
 router.post('/add', auth.verifyToken, (req, res) => {
     if (!req.files) {
         db.questions.create({
@@ -17,7 +17,7 @@ router.post('/add', auth.verifyToken, (req, res) => {
     } else {
 
         var file = req.files.image;
-        var img_name = file.name;
+        var img_name = `${shortUUID.generate()}-${req.user.id}.${file.mimetype.split('/')[1]}`;
 
         if (file.mimetype == "image/jpeg" || file.mimetype == "image/png" || file.mimetype == "image/gif") {
 
