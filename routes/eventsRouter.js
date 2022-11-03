@@ -4,55 +4,77 @@ const db = require('../models');
 const EVENT = db.Events;
 const PARTICIPANT = db.Participants;
 const USER = db.Users;
+const shortUUID = require('short-uuid');
+const auth = require('../auth');
+const fs = require('fs');
 
 //For testing purpose
 // const reqUserId = "41b6a7e0-59bc-4528-ae7e-b3fbe64303a8";
-const reqUserId = "41b6a7e0-59bc-4528-ae7e-b3fbe64303b5";
+// const reqUserId = "41b6a7e0-59bc-4528-ae7e-b3fbe64303b5";
 
 eventRouter.use(express.json());
 
-// /events/ api endpoint
-eventRouter.route('/')
-    .get((req, res, next) => {
-        EVENT.findAll({
-            include: [
-                {
-                    model: USER,
-                    attributes: { exclude: ['password'] },
-                    // attributes: ['id', 'fullName', 'username']
-                }
-            ]
-        })
-            .then((events) => {
-                if (events !== null) {
-                    res.statusCode = 200;
-                    res.setHeader('Content-Type', 'application/json');
-                    res.json(events);
-                } else {
-                    err = new Error(err);
-                    next(err);
-                }
-            },
-                err => next(err))
-            .catch(err => next(err))
+
+eventRouter.get('/page/:pagenb', (req, res, next) => {
+    const limit = 5;
+    EVENT.findAll({
+        offset: (req.params.pagenb - 1) * limit,
+        limit: limit,
+        include: [
+            {
+                model: USER,
+                // attributes: { exclude: ['password'] },
+                attributes: ['id', 'fullName', 'avatar', 'domain'],
+                through: { attributes: [] }
+            }
+        ]
     })
-    .post((req, res, next) => {
-        EVENT.create(req.body)
-            .then((event) => {
+        .then((events) => {
+            if (events !== null) {
                 res.statusCode = 200;
                 res.setHeader('Content-Type', 'application/json');
-                res.json({ success: true, message: "Event added successfully", event: event });
-            },
-                err => {
-                    // if err.code === 11000 that means there is a duplicate key
-                    if (err.code && err.code === 11000) {
-                        res.statusCode = 409;
-                        res.setHeader('Content-Type', 'application/json');
-                        res.json({ success: false, message: "Event name is already exist" });
-                    } else
-                        next(err);
+                res.json(events);
+            } else {
+                err = new Error(err);
+                next(err);
+            }
+        },
+            err => next(err))
+        .catch(err => next(err))
+})
+eventRouter.route('/')
+    .post(auth.verifyToken, auth.verifyAdmin, (req, res, next) => {
+        if (!req.files) {
+            EVENT.create(req.body)
+                .then((event) => {
+                    res.statusCode = 200;
+                    res.setHeader('Content-Type', 'application/json');
+                    res.json({ success: true, message: "Event added successfully", event: event });
+                },
+                    err => next(err))
+                .catch(err => next(err));
+        } else {
+            var file = req.files.image;
+            var imageName = `${shortUUID.generate()}-${req.user.id}.${file.mimetype.split('/')[1]}`;
+            if (file.mimetype == "image/jpeg" || file.mimetype == "image/png" || file.mimetype == "image/gif") {
+                file.mv('public/images/upload/events/' + imageName, (err) => {
+                    if (err) {
+                        next(err)
+                    } else {
+                        req.body.event_image = imageName;
+                        EVENT.create(req.body)
+                            .then((event) => {
+                                res.statusCode = 200;
+                                res.setHeader('Content-Type', 'application/json');
+                                res.json({ success: true, message: "Event added successfully", event: event });
+                            },
+                                err => next(err))
+                            .catch(err => next(err));
+
+                    }
                 })
-            .catch(err => next(err));
+            }
+        }
     });
 
 
@@ -66,8 +88,8 @@ eventRouter.route('/:eventId')
             include: [
                 {
                     model: USER,
-                    attributes: { exclude: ['password'] },
-                    // attributes: ['id', 'fullName', 'username']
+                    attributes: ['id', 'fullName', 'avatar', 'domain'],
+                    through: { attributes: [] }
                 }
             ]
         })
@@ -94,9 +116,31 @@ eventRouter.route('/:eventId')
                 err => next(err))
             .catch(err => next(err))
     })
-    .delete((req, res, next) => {
+    .delete(auth.verifyToken, auth.verifyAdmin, (req, res, next) => {
+        EVENT.findOne({ where: { id: req.params.eventId }, raw: true })
+            .then((event) => {
+                if (event.event_image != null) {
+                    var imgWithPath = `public/images/upload/events/${event.event_image}`;
+
+                    if (fs.existsSync(imgWithPath)) {
+                        if (event.event_image.includes(req.user.id)) {
+                            fs.unlink(imgWithPath, err => {
+                                if (err) next(err);
+                            });
+                        } else {
+                            console.log("This is not your own picture");
+                        }
+                    } else {
+                        console.log("image doesn't exist");
+                    }
+                }
+            },
+                err => next(err))
+            .catch(err => next(err))
+
         EVENT.destroy({ where: { id: req.params.eventId } })
             .then((event) => {
+
                 res.statusCode = 200;
                 res.setHeader('Content-Type', 'application/json');
                 res.json({ success: true, message: "Event deleted successfully", deletedEvent: event });
@@ -107,30 +151,35 @@ eventRouter.route('/:eventId')
 
 
 
+// $$$$$$$$$$$$$$$$$$$$ PARTICIPATE/UNPARTICPATE $$$$$$$$$$$$$$$$$$$$$$$$$$
+eventRouter.post('/participate/:eventId', auth.verifyToken, (req, res, next) => {
+    var obj = {
+        "UserId": req.user.id,
+        "EventId": req.params.eventId
+    }
+    PARTICIPANT.create(obj)
+        .then((result) => {
+            res.statusCode = 200;
+            res.setHeader('Content-Type', 'application/json');
+            res.json({ success: true, message: "Participated successfully", result: result });
+        },
+            err => {
+                // console.log(err.parent.code);
+                // if err.parent.code === "ER_DUP_ENTRY" that means there is a duplicate key
+                if (err.parent.code && err.parent.code === "ER_DUP_ENTRY") {
+                    PARTICIPANT.destroy({ where: { UserId: req.user.id, EventId: req.params.eventId } })
+                        .then(() => {
+                            res.statusCode = 200;
+                            res.setHeader('Content-Type', 'application/json');
+                            res.json({ success: true, message: "Your particpation has been canceled successfully" });
+                        },
+                            err => next(err))
+                        .catch(err => next(err));
+                } else
+                    next(err);
+            })
+        .catch(err => next(err));
+})
 
-    //$$$$$$$$$$$$$$// USER PARTICIPATE TO EVENT //$$$$$$$$$$$$$$//
-    .post((req, res, next) => {
-        var obj = {
-            "UserId": reqUserId,
-            "EventId": req.params.eventId
-        }
-        PARTICIPANT.create(obj)
-            .then((result) => {
-                res.statusCode = 200;
-                res.setHeader('Content-Type', 'application/json');
-                res.json({ success: true, message: "Participated successfully", result: result });
-            },
-                err => {
-                    // console.log(err.parent.code);
-                    // if err.parent.code === "ER_DUP_ENTRY" that means there is a duplicate key
-                    if (err.parent.code && err.parent.code === "ER_DUP_ENTRY") {
-                        res.statusCode = 409;
-                        res.setHeader('Content-Type', 'application/json');
-                        res.json({ success: false, message: "Already participated" });
-                    } else
-                        next(err);
-                })
-            .catch(err => next(err));
-    })
 
 module.exports = eventRouter;

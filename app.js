@@ -7,9 +7,10 @@ var logger = require('morgan');
 var bodyParser = require("body-parser");
 require("dotenv").config();
 
+// var cronjob = require('./utils/reminder');
 
 var eventRouter = require('./routes/eventsRouter');
-var uploadEventimgsRouter = require('./routes/uploadEventsImgs');
+var reviewRouter = require('./routes/eventReviewsRouter');
 
 var userRouter = require('./routes/usersRouter');
 var roleRouter = require('./routes/roleRouter');
@@ -18,6 +19,8 @@ var publicationsRouter = require('./routes/publications');
 var CommentairesRouter = require('./routes/commentaires');
 var ReactionsRouter = require('./routes/reactions');
 var SignalerRouter = require('./routes/Signaler');
+
+//var ReclamationRouter = require('./routes/reclamation');
 
 var QuestionsRouter = require('./routes/Question');
 var ReponsesRouter = require('./routes/Reponses');
@@ -44,8 +47,9 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(fileUpload());
+
 app.use('/events', eventRouter);
-app.use('/eventimages', uploadEventimgsRouter);
+app.use('/reviews', reviewRouter);
 
 app.use('/users', userRouter);
 app.use('/roles', roleRouter);
@@ -54,6 +58,8 @@ app.use('/publications', publicationsRouter);
 app.use('/commentaires', CommentairesRouter);
 app.use('/reactions', ReactionsRouter);
 app.use('/signaler',SignalerRouter);
+
+//app.use('/reclamation',ReclamationRouter);
 
 
 app.use('/questions', QuestionsRouter);
@@ -64,7 +70,6 @@ app.use('/aimes', AimesRouter);
 app.use(function(req, res, next) {
     next(createError(404));
 });
-
 // error handler
 app.use(function(err, req, res, next) {
     // set locals, only providing error in development

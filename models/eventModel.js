@@ -12,7 +12,7 @@ module.exports = (sequelize, DataTypes) => {
         },
         event_image: {
             type: DataTypes.STRING,
-            allowNull: false
+            defaultValue: null
         },
         event_category: {
             type: DataTypes.STRING,
@@ -54,6 +54,7 @@ module.exports = (sequelize, DataTypes) => {
     );
     Events.associate = models => {
         Events.belongsToMany(models.Users, { through: models.Participants })
+        Events.hasMany(models.Reviews, { onDelete: "cascade" })
     }
     return Events;
 }
