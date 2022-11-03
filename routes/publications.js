@@ -11,7 +11,7 @@ const multer = require('multer')
 var auth = require('../auth');
 const { where } = require('sequelize');
 
-router.post('/add', (req, res) => {
+router.post('/add',auth.verifyToken, (req, res) => {
 
   var file = req.files.image;
   var imgName = file.name;

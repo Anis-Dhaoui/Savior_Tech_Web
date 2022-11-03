@@ -4,7 +4,7 @@ var db = require('../models');
 
 var auth = require('../auth');
 
-router.post('/add', (req, res, next) => {
+router.post('/add',auth.verifyToken, (req, res, next) => {
     db.Signaler.count({ where: { statut: req.body.statut, PublicationId: req.body.PublicationId, UserId: req.body.UserId } })
         .then((count) => {
             if (count != 0) {

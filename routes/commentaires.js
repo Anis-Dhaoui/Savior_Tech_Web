@@ -4,12 +4,17 @@ var db = require('../models');
 
 var auth = require('../auth');
 
-router.post('/add', auth.verifyToken , (req, res) => {
-  db.Commentaires.create(req.body).then(
-    (p) => {
-      res.send(p);
-    }
-  );
+router.post('/add', auth.verifyToken, (req, res) => {
+  if (req.body.description != null) {
+    db.Commentaires.create(req.body).then(
+      (p) => {
+        res.send(p);
+      }
+    );
+  }else{
+    res.send("Ajouter un commentaire ....")
+  }
+
 });
 
 router.get('/commentairesPublication/:PublicationId', function (req, res, next) {
@@ -19,7 +24,7 @@ router.get('/commentairesPublication/:PublicationId', function (req, res, next) 
   });
 });
 
-router.delete('/remove/:id', auth.verifyToken , (req, res) => {
+router.delete('/remove/:id', auth.verifyToken, (req, res) => {
   db.Commentaires.destroy({ where: { id: req.params.id } }).then(
     () => {
       res.send('removed');
