@@ -58,7 +58,7 @@ userRouter.delete('/', (req, res, next) => {
 
 // $$$$$$$$$$$$$$$$$$$ SIGNUP $$$$$$$$$$$$$$$$$$$
 userRouter.post('/signup', (req, res, next) => {
-  db.Users.findOne({ where: { [Op.or]: [{ username: req.body.username }, { email: req.body.email }] }, raw: true })
+  db.Users.findOne({ where: { [Op.or]: [{ username: req.body.username }, { email: req.body.email },{phone: req.body.phone}] }, raw: true })
     .then((user) => {
       if (user && user.username == req.body.username) {
         res.statusCode = 409;
@@ -70,8 +70,13 @@ userRouter.post('/signup', (req, res, next) => {
         res.setHeader('Content-Type', 'application/json');
         res.json({ success: false, statusMsg: "Email is already exists" });
 
-      } else {
+      } else if (user && user.phone == req.body.phone) {
+        console.log("jjjjjjjjjjjj")
+        res.statusCode = 409;
+        res.setHeader('Content-Type', 'application/json');
+        res.json({ success: false, statusMsg: "Phone is already exists" });
 
+      } else {
         const confirCode = auth.getToken({ email: req.body.email });
         const smsConfirCode = codeGenerator(6, { type: 'number' });
 
@@ -101,7 +106,7 @@ userRouter.post('/signup', (req, res, next) => {
           </div>`
               sendEmail(req.body.email, "SAVIOR TECH | Confirm Email", message);
 
-              // sendSms(req.body.phone, smsConfirCode);
+              sendSms(req.body.phone, smsConfirCode);
               res.statusCode = 200;
               res.setHeader('Content-Type', 'application/json');
               res.json({ success: true, message: "Signup successfully", user: user });
@@ -139,7 +144,7 @@ userRouter.post('/signup', (req, res, next) => {
                 </div>`
                     sendEmail(req.body.email, "SAVIOR TECH | Confirm Email", message);
 
-                    // sendSms(req.body.phone, smsConfirCode);
+                    sendSms(req.body.phone, smsConfirCode);
                     res.statusCode = 200;
                     res.setHeader('Content-Type', 'application/json');
                     res.json({ success: true, message: "Signup successfully", user: user });
@@ -158,10 +163,10 @@ userRouter.post('/signup', (req, res, next) => {
 });
 // $$$$$$$$$$$$$$$$$$$ SIGNUP $$$$$$$$$$$$$$$$$$$
 
-// $$$$$$$$$$$$$$$$$$$ VERIFY EMAIL $$$$$$$$$$$$$$$$$$$ /fhjjh/65285926
+// $$$$$$$$$$$$$$$$$$$ VERIFY EMAIL $$$$$$$$$$$$$$$$$$$ 
 userRouter.get('/verify/:userId/:confirCode', (req, res, next) => {
   db.Users.update(
-    { confirResetPassCode: null, status: "confirmed" }, 
+    { confirResetPassCode: null, status: "confirmed" },
     { where: { [Op.and]: [{ id: req.params.userId }, { confirResetPassCode: req.params.confirCode }] } }
   )
     .then((user) => {
@@ -277,7 +282,7 @@ userRouter.post('/signin', (req, res, next) => {
 
 
 
-// /users/userId api endpoint
+// $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$delete user with image$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 userRouter.route('/:userId')
   .put(auth.verifyToken, (req, res, next) => {
     db.Users.update(req.body, { where: { id: req.user.id } })
@@ -304,15 +309,16 @@ userRouter.route('/:userId')
             console.log("image doesn't exist");
           }
         }
-      },
-        err => next(err))
-      .catch(err => next(err))
-    db.Users.destroy({ where: { id: req.params.userId } })
-      .then((user) => {
 
-        res.statusCode = 200;
-        res.setHeader('Content-Type', 'application/json');
-        res.json({ success: true, message: "User deleted successfully", deletedUser: user });
+        db.Users.destroy({ where: { id: req.params.userId } })
+          .then((user) => {
+
+            res.statusCode = 200;
+            res.setHeader('Content-Type', 'application/json');
+            res.json({ success: true, message: "User deleted successfully", deletedUser: user });
+          },
+            err => next(err))
+          .catch(err => next(err))
       },
         err => next(err))
       .catch(err => next(err))
@@ -323,19 +329,19 @@ userRouter.route('/:userId')
   })
 
 
-  //$$$$$$$$$$$$$$$ block user $$$$$$$$$$$$$$$$$$$$$$//
+//$$$$$$$$$$$$$$$ block user $$$$$$$$$$$$$$$$$$$$$$//
 
-  userRouter.put('/block/:userId', auth.verifyToken, auth.verifyAdmin, (req, res, next) => {
-    db.Users.update({status: "blocked"}, { where: { id: req.params.userId } })
-      .then((user) => {
-        res.statusCode = 200;
-        res.setHeader('Content-Type', 'application/json');
-        res.json({ success: true, message: "User blocked successfully", updatedUser: user });
-      },
-        err => next(err))
-      .catch(err => next(err))
-  }) 
-  //$$$$$$$$$$$$$$$ block user $$$$$$$$$$$$$$$$$$$$$$//
+userRouter.put('/block/:userId', auth.verifyToken, auth.verifyAdmin, (req, res, next) => {
+  db.Users.update({ status: "blocked" }, { where: { id: req.params.userId } })
+    .then((user) => {
+      res.statusCode = 200;
+      res.setHeader('Content-Type', 'application/json');
+      res.json({ success: true, message: "User blocked successfully", updatedUser: user });
+    },
+      err => next(err))
+    .catch(err => next(err))
+})
+//$$$$$$$$$$$$$$$ block user $$$$$$$$$$$$$$$$$$$$$$//
 
 
 
@@ -371,7 +377,6 @@ userRouter.post('/forgotpassword/sendlink', (req, res, next) => {
           res.statusCode = 200;
           res.setHeader('Content-Type', 'application/json');
           res.json({ success: true, statusMsg: "Reset password link sent successfully to " + user.email });
-//http://localhost:3000/users/forgotpassword/resetpassword/74bb4723-e580-4fb8-bfcb-4a2ebf9bfc0e/eyJhbGciOiJ
         }, err => next(err))
       }
     })
@@ -379,7 +384,7 @@ userRouter.post('/forgotpassword/sendlink', (req, res, next) => {
 
 userRouter.get('/forgotpassword/resetpassword/:userId/:confirPassCode', (req, res, next) => {
   db.Users.update(
-    { confirResetPassCode: null, password : bcrypt.hashSync(req.body.newPassword, 8)  }, 
+    { confirResetPassCode: null, password: bcrypt.hashSync(req.body.newPassword, 8) },
     { where: { [Op.and]: [{ id: req.params.userId }, { confirResetPassCode: req.params.confirPassCode }] } }
   )
     .then((user) => {
@@ -387,7 +392,7 @@ userRouter.get('/forgotpassword/resetpassword/:userId/:confirPassCode', (req, re
         res.statusCode = 200;
         res.setHeader('Content-Type', 'application/json');
         res.json({ success: true, statusMsg: "Password changed successfully" });
-        
+
 
       } else {
         res.statusCode = 403;
