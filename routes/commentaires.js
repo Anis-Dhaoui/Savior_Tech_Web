@@ -4,9 +4,17 @@ var db = require('../models');
 
 var auth = require('../auth');
 
-router.post('/add', auth.verifyToken, (req, res) => {
-  if (req.body.description != null) {
-    db.Commentaires.create(req.body).then(
+const Filter = require("bad-words");
+const filter = new Filter();
+const words = require("../extra-words.json");
+const { raw } = require('body-parser');
+filter.addWords(...words);
+
+router.post('/add', (req, res) => {
+  if (req.body.description !=="") {
+    db.Commentaires.create({
+            description : filter.clean(req.body.description)
+    }).then(
       (p) => {
         res.send(p);
       }

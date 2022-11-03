@@ -4,32 +4,67 @@ var db = require('../models');
 const Sequelize = require("sequelize");
 const Op = Sequelize.Op;
 
-const multer = require('multer')
+const shortUUID = require('short-uuid');
+
+const multer = require('multer');
+const Filter = require("bad-words");
+const filter = new Filter();
+const words = require("../extra-words.json");
+const { raw } = require('body-parser');
+filter.addWords(...words);
+
 
 
 
 var auth = require('../auth');
 const { where } = require('sequelize');
 
-router.post('/add',auth.verifyToken, (req, res) => {
+router.post('/add', (req, res) => {
 
-  var file = req.files.image;
-  var imgName = file.name;
-
-  file.mv('public/images/upload/' + imgName)
-  db.Publications.create({
-    titre: req.body.titre,
-    description: req.body.description,
-    image: imgName,
-    statut: 'active'
-  }).then(
-    (p) => {
-      res.send(p);
+  if (!req.files) {
+    if ((req.body.description !== "") || (req.body.titre)) {
+      db.Publications.create({
+        titre: filter.clean(req.body.titre),
+        description: filter.clean(req.body.description),
+        image: null,
+        statut: 'active'
+      }).then(
+        (p) => {
+          res.send(p);
+        }
+      );
+    } else {
+      res.send("Ajouter un sujet ....")
     }
-  );
+  } else {
 
+    var file = req.files.image;
+    var imgName = `${shortUUID.generate()}.${file.mimetype.split('/')[1]}`;
 
+    if (file.mimetype == "image/jpeg" || file.mimetype == "image/png" || file.mimetype == "image/gif") {
 
+      file.mv('public/images/upload/publications/' + imgName, function (err) {
+
+        {
+          if ((req.body.description !== "") || (req.body.titre)) {
+            db.Publications.create({
+              titre: filter.clean(req.body.titre),
+              description: filter.clean(req.body.description),
+              image: imgName,
+              statut: 'active'
+            }).then(
+              (p) => {
+                res.send(p);
+              }
+            );
+          } else {
+            res.send("Ajouter un sujet ....")
+          }
+        }
+      });
+    }
+
+  }
 });
 
 
