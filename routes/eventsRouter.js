@@ -16,10 +16,10 @@ const fs = require('fs');
 eventRouter.use(express.json());
 
 
-eventRouter.get('/page/:pagenb', (req, res, next) => {
+eventRouter.get('/', (req, res, next) => {
     const limit = 5;
     EVENT.findAll({
-        offset: (req.params.pagenb - 1) * limit,
+        offset: (req.query.page - 1) * limit,
         limit: limit,
         include: [
             {
@@ -27,6 +27,12 @@ eventRouter.get('/page/:pagenb', (req, res, next) => {
                 // attributes: { exclude: ['password'] },
                 attributes: ['id', 'fullName', 'avatar', 'domain'],
                 through: { attributes: [] }
+            },
+
+            {
+                model: REVIEWS,
+                attributes: ['id'],
+
             }
         ]
     })
