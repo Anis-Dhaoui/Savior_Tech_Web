@@ -6,6 +6,7 @@
     "start": "nodemon ./bin/www"
   },
   "dependencies": {
+    "bad-words": "^3.0.4",
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.20.1",
     "cookie-parser": "~1.4.4",
@@ -21,6 +22,7 @@
     "multer": "^1.4.5-lts.1",
     "mysql2": "^2.3.3",
     "node-cron": "^3.0.2",
+    "node-notifier": "^10.0.1",
     "nodemailer": "^6.8.0",
     "nodemon": "^2.0.20",
     "paypal-rest-sdk": "^1.8.1",

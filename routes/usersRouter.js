@@ -7,13 +7,18 @@ var codeGenerator = require('generate-sms-verification-code')
 userRouter.use(express.json());
 var sendEmail = require('../utils/email');
 var sendSms = require('../utils/sms');
-const { Op } = require("sequelize");
+const { Op, where } = require("sequelize");
 const shortUUID = require('short-uuid');
+const fs = require('fs');
 
 
 // /users/ api endpoint
-userRouter.get('/', (req, res, next) => {
+userRouter.get('/chunk/:chunknbr', (req, res, next) => {
+  const limit = 3;
   db.Users.findAll({
+    offset: (req.params.chunknbr - 1) * limit,
+    limit: limit,
+
     attributes: { exclude: ['RoleId'] },
     include: {
       model: db.Roles,
@@ -53,7 +58,7 @@ userRouter.delete('/', (req, res, next) => {
 
 // $$$$$$$$$$$$$$$$$$$ SIGNUP $$$$$$$$$$$$$$$$$$$
 userRouter.post('/signup', (req, res, next) => {
-  db.Users.findOne({ where: { [Op.or]: [{ username: req.body.username }, { email: req.body.email }] }, raw: true })
+  db.Users.findOne({ where: { [Op.or]: [{ username: req.body.username }, { email: req.body.email },{phone: req.body.phone}] }, raw: true })
     .then((user) => {
       if (user && user.username == req.body.username) {
         res.statusCode = 409;
@@ -65,12 +70,17 @@ userRouter.post('/signup', (req, res, next) => {
         res.setHeader('Content-Type', 'application/json');
         res.json({ success: false, statusMsg: "Email is already exists" });
 
-      } else {
+      } else if (user && user.phone == req.body.phone) {
+        console.log("jjjjjjjjjjjj")
+        res.statusCode = 409;
+        res.setHeader('Content-Type', 'application/json');
+        res.json({ success: false, statusMsg: "Phone is already exists" });
 
+      } else {
         const confirCode = auth.getToken({ email: req.body.email });
         const smsConfirCode = codeGenerator(6, { type: 'number' });
 
-       
+
 
         if (!req.files) {
           db.Users.create({
@@ -82,21 +92,21 @@ userRouter.post('/signup', (req, res, next) => {
             domain: req.body.domain,
             interest: req.body.interest,
             speciality: req.body.speciality,
-            confirEmailCode: confirCode,
+            confirResetPassCode: confirCode,
             confirSmsCode: smsConfirCode,
             RoleId: req.body.RoleId
           })
             .then((user) => {
               const message =
-              `<div>
+                `<div>
             <h1>Email Confirmation</h1>
             <h2>Hello ${req.body.fullName}</h2>
             <p>Thank you for subscribing. Please confirm your email by clicking on the following link</p>
             <a href=${process.env.BASE_URL}/users/verify/${user.dataValues.id}/${confirCode}> Click here</a>
           </div>`
-            sendEmail(req.body.email, "SAVIOR TECH | Confirm Email", message);
-    
-            // sendSms(req.body.phone, smsConfirCode);
+              sendEmail(req.body.email, "SAVIOR TECH | Confirm Email", message);
+
+              sendSms(req.body.phone, smsConfirCode);
               res.statusCode = 200;
               res.setHeader('Content-Type', 'application/json');
               res.json({ success: true, message: "Signup successfully", user: user });
@@ -120,21 +130,21 @@ userRouter.post('/signup', (req, res, next) => {
                   domain: req.body.domain,
                   interest: req.body.interest,
                   speciality: req.body.speciality,
-                  confirEmailCode: confirCode,
+                  confirResetPassCode: confirCode,
                   confirSmsCode: smsConfirCode,
                   RoleId: req.body.RoleId
                 })
                   .then((user) => {
                     const message =
-                    `<div>
+                      `<div>
                   <h1>Email Confirmation</h1>
                   <h2>Hello ${req.body.fullName}</h2>
                   <p>Thank you for subscribing. Please confirm your email by clicking on the following link</p>
                   <a href=${process.env.BASE_URL}/users/verify/${user.dataValues.id}/${confirCode}> Click here</a>
                 </div>`
-                  sendEmail(req.body.email, "SAVIOR TECH | Confirm Email", message);
-          
-                  // sendSms(req.body.phone, smsConfirCode);
+                    sendEmail(req.body.email, "SAVIOR TECH | Confirm Email", message);
+
+                    sendSms(req.body.phone, smsConfirCode);
                     res.statusCode = 200;
                     res.setHeader('Content-Type', 'application/json');
                     res.json({ success: true, message: "Signup successfully", user: user });
@@ -153,11 +163,11 @@ userRouter.post('/signup', (req, res, next) => {
 });
 // $$$$$$$$$$$$$$$$$$$ SIGNUP $$$$$$$$$$$$$$$$$$$
 
-// $$$$$$$$$$$$$$$$$$$ VERIFY EMAIL $$$$$$$$$$$$$$$$$$$ /fhjjh/65285926
+// $$$$$$$$$$$$$$$$$$$ VERIFY EMAIL $$$$$$$$$$$$$$$$$$$ 
 userRouter.get('/verify/:userId/:confirCode', (req, res, next) => {
   db.Users.update(
-    { confirEmailCode: null, status: "confirmed" },
-    { where: { [Op.and]: [{ id: req.params.userId }, { confirEmailCode: req.params.confirCode }] } }
+    { confirResetPassCode: null, status: "confirmed" },
+    { where: { [Op.and]: [{ id: req.params.userId }, { confirResetPassCode: req.params.confirCode }] } }
   )
     .then((user) => {
       if (user[0] !== 0) {
@@ -272,7 +282,7 @@ userRouter.post('/signin', (req, res, next) => {
 
 
 
-// /users/userId api endpoint
+// $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$delete user with image$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 userRouter.route('/:userId')
   .put(auth.verifyToken, (req, res, next) => {
     db.Users.update(req.body, { where: { id: req.user.id } })
@@ -286,39 +296,112 @@ userRouter.route('/:userId')
   })
 
   .delete(auth.verifyToken, auth.verifyAdmin, (req, res, next) => {
-    db.Users.destroy({ where: { id: req.user.id }, raw:true })
+    db.Users.findOne({ where: { id: req.params.userId }, raw: true })
       .then((user) => {
-        if (user.userImage != null) {
-          var pathImage = `public/images/upload/events/${user.userImage}`;
+        if (user.avatar != null) {
+          var pathImage = `public/images/upload/users/${user.avatar}`;
 
           if (fs.existsSync(pathImage)) {
-              if (user.userImage.includes(req.user.id)) {
-                  fs.unlink(pathImage, err => {
-                      if (err) next(err);
-                  });
-              } else {
-                  console.log("Failed Operation!!");
-              }
+            fs.unlink(pathImage, err => {
+              if (err) next(err);
+            });
           } else {
-              console.log("image doesn't exist");
+            console.log("image doesn't exist");
           }
-      }
+        }
+
+        db.Users.destroy({ where: { id: req.params.userId } })
+          .then((user) => {
+
+            res.statusCode = 200;
+            res.setHeader('Content-Type', 'application/json');
+            res.json({ success: true, message: "User deleted successfully", deletedUser: user });
+          },
+            err => next(err))
+          .catch(err => next(err))
       },
         err => next(err))
       .catch(err => next(err))
-      db.Users.destroy({ where: { id: req.params.userId } })
-      .then((user) => {
 
+
+
+
+  })
+
+
+//$$$$$$$$$$$$$$$ block user $$$$$$$$$$$$$$$$$$$$$$//
+
+userRouter.put('/block/:userId', auth.verifyToken, auth.verifyAdmin, (req, res, next) => {
+  db.Users.update({ status: "blocked" }, { where: { id: req.params.userId } })
+    .then((user) => {
+      res.statusCode = 200;
+      res.setHeader('Content-Type', 'application/json');
+      res.json({ success: true, message: "User blocked successfully", updatedUser: user });
+    },
+      err => next(err))
+    .catch(err => next(err))
+})
+//$$$$$$$$$$$$$$$ block user $$$$$$$$$$$$$$$$$$$$$$//
+
+
+
+
+
+
+
+//$$$$$$$$$$$$$$$$$$$$$$$$// RESET PASSWORD //$$$$$$$$$$$$$$$$$$$$$$$$//
+userRouter.post('/forgotpassword/sendlink', (req, res, next) => {
+  db.Users.findOne({ where: { email: req.body.email } })
+    .then((user) => {
+      if (!user) {
+        return res.status(404).json({ success: false, statusMsg: 'Email not found' });
+      }
+      else if (user.status != "confirmed") {
+        return res.status(403).json({ success: false, statusMsg: 'This account is not verified yet! Please verify your email first.' });
+      }
+      else {
+        const confirResetPasswordCode = auth.getToken({ email: user.email });
+
+        db.Users.update(
+          { confirResetPassCode: confirResetPasswordCode },
+          { where: { email: user.email } }
+        ).then(() => {
+          const message =
+            `<div>
+          <h1>Email Reset Password</h1>
+          <h2>Hello ${user.fullName}</h2>
+          <p>You or someone else requested to reset your password, if it was you, please click the link below to reset your password, othwise ignore this email</p>
+          <a href= ${process.env.BASE_URL}/users/forgotpassword/resetpassword/${user.id}/${confirResetPasswordCode}> Click here</a>
+        </div>`
+          sendEmail(user.email, "SAVIOR TECH | Reset Password", message)
           res.statusCode = 200;
           res.setHeader('Content-Type', 'application/json');
-          res.json({ success: true, message: "Event deleted successfully", deletedEvent: user });
-      },
-          err => next(err))
-      .catch(err => next(err))
+          res.json({ success: true, statusMsg: "Reset password link sent successfully to " + user.email });
+        }, err => next(err))
+      }
+    })
+})
+
+userRouter.get('/forgotpassword/resetpassword/:userId/:confirPassCode', (req, res, next) => {
+  db.Users.update(
+    { confirResetPassCode: null, password: bcrypt.hashSync(req.body.newPassword, 8) },
+    { where: { [Op.and]: [{ id: req.params.userId }, { confirResetPassCode: req.params.confirPassCode }] } }
+  )
+    .then((user) => {
+      if (user[0] !== 0) {
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.json({ success: true, statusMsg: "Password changed successfully" });
 
 
-      
-
-  });
-
+      } else {
+        res.statusCode = 403;
+        res.setHeader('Content-Type', 'application/json');
+        res.json({ success: false, statusMsg: "Invalid confirmation link" });
+        console.log("invalid link");
+      }
+    },
+      err => next(err))
+    .catch(() => next(new Error("Something went wrong")));
+});
 module.exports = userRouter;

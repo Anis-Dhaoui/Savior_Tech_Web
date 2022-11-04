@@ -4,12 +4,25 @@ var db = require('../models');
 
 var auth = require('../auth');
 
-router.post('/add', auth.verifyToken , (req, res) => {
-  db.Commentaires.create(req.body).then(
-    (p) => {
-      res.send(p);
-    }
-  );
+const Filter = require("bad-words");
+const filter = new Filter();
+const words = require("../extra-words.json");
+const { raw } = require('body-parser');
+filter.addWords(...words);
+
+router.post('/add', (req, res) => {
+  if (req.body.description !=="") {
+    db.Commentaires.create({
+            description : filter.clean(req.body.description)
+    }).then(
+      (p) => {
+        res.send(p);
+      }
+    );
+  }else{
+    res.send("Ajouter un commentaire ....")
+  }
+
 });
 
 router.get('/commentairesPublication/:PublicationId', function (req, res, next) {
@@ -19,7 +32,7 @@ router.get('/commentairesPublication/:PublicationId', function (req, res, next) 
   });
 });
 
-router.delete('/remove/:id', auth.verifyToken , (req, res) => {
+router.delete('/remove/:id', auth.verifyToken, (req, res) => {
   db.Commentaires.destroy({ where: { id: req.params.id } }).then(
     () => {
       res.send('removed');

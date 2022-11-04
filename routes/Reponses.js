@@ -2,10 +2,14 @@ var express = require('express');
 var router = express.Router();
 var db = require('../models');
 var auth = require('../auth');
+const Filter = require("bad-words");
+const filter = new Filter();
+const words = require("../extra-words.json");
+filter.addWords(...words);
 
 router.post('/add', auth.verifyToken, (req, res) => {
     db.reponses.create({
-        message: req.body.message,
+        message: filter.clean(req.body.message),
         questionId : req.body.questionId,
         UserId: req.user.id
 }).then(
@@ -22,14 +26,14 @@ router.get('/', function(req, res, next) {
     });
 });
 router.delete('/remove/:id', auth.verifyToken, (req, res) => {
-    db.reponses.destroy({ where: { id: req.user.id} }).then(
+    db.reponses.destroy({ where: { UserId: req.user.id,questionId : req.body.questionId} }).then(
         () => {
             res.send('removed');
         }
     );
 });
 router.put('/update/:id',  auth.verifyToken,(req, res) => {
-    db.reponses.update(req.body, { where: { id: req.user.id} }).then(
+    db.reponses.update(req.body, { where: { UserId: req.user.id,questionId : req.body.questionId} }).then(
         () => {
             res.send('updated');
         });
