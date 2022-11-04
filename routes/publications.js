@@ -13,24 +13,27 @@ const words = require("../extra-words.json");
 const { raw } = require('body-parser');
 filter.addWords(...words);
 
+const notifier = require('node-notifier')
 
 
 
 var auth = require('../auth');
 const { where } = require('sequelize');
 
-router.post('/add', (req, res) => {
+router.post('/add', auth.verifyToken, (req, res) => {
 
   if (!req.files) {
-    if ((req.body.description !== "") || (req.body.titre)) {
+    if ((req.body.description !== "") || (req.body.titre !== "")) {
       db.Publications.create({
         titre: filter.clean(req.body.titre),
         description: filter.clean(req.body.description),
         image: null,
-        statut: 'active'
+        statut: 'active',
+        UserId: req.user.id
       }).then(
         (p) => {
           res.send(p);
+          notifier.notify('publié');
         }
       );
     } else {
@@ -51,10 +54,13 @@ router.post('/add', (req, res) => {
               titre: filter.clean(req.body.titre),
               description: filter.clean(req.body.description),
               image: imgName,
-              statut: 'active'
+              statut: 'active',
+              UserId: req.user.id
             }).then(
               (p) => {
                 res.send(p);
+                notifier.notify('publié');
+
               }
             );
           } else {
@@ -101,10 +107,11 @@ router.get('/search/:searchTerm', function (req, res, next) {
   var searchTerm = req.params.searchTerm;
   db.Publications.findAll({
     where: {
-      [Op.or]: [{ titre: { [Op.like]: `%${searchTerm}%` } }, { description: { [Op.like]: `%${searchTerm}%` } }],
+      statut: 'active',
+      [Op.or]: [{ titre: { [Op.like]: `%${searchTerm}%` } }, { description: { [Op.like]: `%${searchTerm}%` } }]
     }
   }).then((resp) => {
-    res.send(resp);
+    res.send(resp)
   });
 });
 
@@ -113,5 +120,6 @@ module.exports = router;
 
 
 // Notification
+
 // Une liste des favoris     
 

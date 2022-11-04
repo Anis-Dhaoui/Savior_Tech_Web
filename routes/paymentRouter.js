@@ -22,7 +22,7 @@ paymentRouter.post('/pay/:eventId', (req, res, next) => {
                     },
                     "redirect_urls": {
                         "return_url": `http://localhost:3000/payment/success?event_id=${event.id}`,
-                        "cancel_url": "http://localhost:3000/cancel"
+                        "cancel_url": "http://localhost:3000/payment/cancel"
                     },
                     "transactions": [{
                         "item_list": {
@@ -66,9 +66,11 @@ paymentRouter.post('/pay/:eventId', (req, res, next) => {
         .catch(err => next(err))
 });
 
+// $$$$$$$$$$$$$$$$$$ WHEN PURCHASE SUCCESS $$$$$$$$$$$$$$$$$$
 paymentRouter.get('/success', (req, res) => {
     const payerId = req.query.PayerID;
     const paymentId = req.query.paymentId;
+    
     EVENT.findOne({ where: { id: req.query.event_id }, raw: true })
         .then((event) => {
             const execute_payment_json = {
@@ -87,46 +89,16 @@ paymentRouter.get('/success', (req, res) => {
                     throw error;
                 } else {
                     console.log(JSON.stringify(payment));
-                    res.send('Success');
+                    res.render('purchaseSuccess', { eventTitle: event.event_title });
                 }
             });
         },
             err => next(err))
         .catch(err => next(err))
 });
+
+// $$$$$$$$$$$$$$$$$$ WHEN PURCHASE CANCELLED $$$$$$$$$$$$$$$$$$
+paymentRouter.get('/cancel', (req, res, next) =>{
+    res.render('purchaseCancel');
+})
 module.exports = paymentRouter;
-
-
-// {
-//     id: 'PAYID-MNSFF5Y0BT571566M002734B',
-//         intent: 'sale',
-//             state: 'created',
-//                 payer: { payment_method: 'paypal' },
-//     transactions: [
-//         {
-//             amount: [Object],
-//             description: 'This is the payment description.',
-//             item_list: [Object],
-//             related_resources: []
-//         }
-//     ],
-//         create_time: '2022-11-03T23:47:02Z',
-//             links: [
-//                 {
-//                     href: 'https://api.sandbox.paypal.com/v1/payments/payment/PAYID-MNSFF5Y0BT571566M002734B',
-//                     rel: 'self',
-//                     method: 'GET'
-//                 },
-//                 {
-//                     href: 'https://www.sandbox.paypal.com/cgi-bin/webscr?cmd=_express-checkout&token=EC-1XK87478WB592581G',
-//                     rel: 'approval_url',
-//                     method: 'REDIRECT'
-//                 },
-//                 {
-//                     href: 'https://api.sandbox.paypal.com/v1/payments/payment/PAYID-MNSFF5Y0BT571566M002734B/execute',
-//                     rel: 'execute',
-//                     method: 'POST'
-//                 }
-//             ],
-//                 httpStatusCode: 201
-// }

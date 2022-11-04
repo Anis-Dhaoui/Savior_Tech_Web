@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "start": "nodemon ./bin/www"
+    "start": "nodemon -e * ./bin/www"
   },
   "dependencies": {
     "bad-words": "^3.0.4",
@@ -30,6 +30,7 @@
     "sequelize-cli": "^6.5.1",
     "short-uuid": "^4.2.2",
     "socket.io": "^4.5.3",
+    "twig": "^1.15.4",
     "twilio": "^3.83.0",
     "web-push": "^3.5.0"
   }

@@ -4,6 +4,7 @@ const db = require('../models');
 const EVENT = db.Events;
 const PARTICIPANT = db.Participants;
 const USER = db.Users;
+const  REVIEWS = db.Reviews;
 const shortUUID = require('short-uuid');
 const auth = require('../auth');
 const fs = require('fs');
@@ -15,10 +16,10 @@ const fs = require('fs');
 eventRouter.use(express.json());
 
 
-eventRouter.get('/page/:pagenb', (req, res, next) => {
+eventRouter.get('/', (req, res, next) => {
     const limit = 5;
     EVENT.findAll({
-        offset: (req.params.pagenb - 1) * limit,
+        offset: (req.query.page - 1) * limit,
         limit: limit,
         include: [
             {
@@ -26,6 +27,12 @@ eventRouter.get('/page/:pagenb', (req, res, next) => {
                 // attributes: { exclude: ['password'] },
                 attributes: ['id', 'fullName', 'avatar', 'domain'],
                 through: { attributes: [] }
+            },
+
+            {
+                model: REVIEWS,
+                attributes: ['id'],
+
             }
         ]
     })
@@ -90,6 +97,10 @@ eventRouter.route('/:eventId')
                     model: USER,
                     attributes: ['id', 'fullName', 'avatar', 'domain'],
                     through: { attributes: [] }
+                },
+                {
+                    model: REVIEWS,
+                    attributes: {exclude:['EventId']}
                 }
             ]
         })

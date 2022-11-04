@@ -10,16 +10,21 @@ const words = require("../extra-words.json");
 const { raw } = require('body-parser');
 filter.addWords(...words);
 
-router.post('/add', (req, res) => {
-  if (req.body.description !=="") {
+const notifier = require('node-notifier')
+
+
+router.post('/add', auth.verifyToken, (req, res) => {
+  if (req.body.description !== "") {
     db.Commentaires.create({
-            description : filter.clean(req.body.description)
-    }).then(
+      description: filter.clean(req.body.description),
+      UserId: req.user.id
+       }).then(
       (p) => {
         res.send(p);
+        notifier.notify('commentaire ajouté');
       }
     );
-  }else{
+  } else {
     res.send("Ajouter un commentaire ....")
   }
 
