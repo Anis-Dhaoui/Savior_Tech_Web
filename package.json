@@ -23,6 +23,7 @@
     "node-cron": "^3.0.2",
     "nodemailer": "^6.8.0",
     "nodemon": "^2.0.20",
+    "paypal-rest-sdk": "^1.8.1",
     "sequelize": "^6.25.3",
     "sequelize-cli": "^6.5.1",
     "short-uuid": "^4.2.2",
