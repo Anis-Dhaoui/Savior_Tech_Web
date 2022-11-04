@@ -4,6 +4,7 @@ const db = require('../models');
 const EVENT = db.Events;
 const PARTICIPANT = db.Participants;
 const USER = db.Users;
+const  REVIEWS = db.Reviews;
 const shortUUID = require('short-uuid');
 const auth = require('../auth');
 const fs = require('fs');
@@ -90,6 +91,10 @@ eventRouter.route('/:eventId')
                     model: USER,
                     attributes: ['id', 'fullName', 'avatar', 'domain'],
                     through: { attributes: [] }
+                },
+                {
+                    model: REVIEWS,
+                    attributes: {exclude:['EventId']}
                 }
             ]
         })
