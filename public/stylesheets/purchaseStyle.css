@@ -16,6 +16,13 @@ body {
 
   }
 
+  .payment_header_cancel {
+    background: rgb(255, 0, 0);
+    padding: 20px;
+    border-radius: 20px 20px 0px 0px;
+
+  }
+
   .check {
     margin: 0px auto;
     width: 50px;
@@ -40,6 +47,12 @@ body {
     padding-top: 25px;
   }
 
+  .content .cancel_msg{
+    font-size: 25px;
+    padding-top: 25px;
+    color: red;
+  }
+
   .content a {
     width: 200px;
     height: 35px;
@@ -47,6 +60,16 @@ body {
     border-radius: 30px;
     padding: 5px 10px;
     background: rgba(255, 102, 0, 1);
+    transition: all ease-in-out 0.3s;
+  }
+
+  .content .gotohome_cancel {
+    width: 200px;
+    height: 35px;
+    color: #fff;
+    border-radius: 30px;
+    padding: 5px 10px;
+    background: rgb(255, 0, 0);
     transition: all ease-in-out 0.3s;
   }
 

@@ -22,7 +22,7 @@ paymentRouter.post('/pay/:eventId', (req, res, next) => {
                     },
                     "redirect_urls": {
                         "return_url": `http://localhost:3000/payment/success?event_id=${event.id}`,
-                        "cancel_url": "http://localhost:3000/cancel"
+                        "cancel_url": "http://localhost:3000/payment/cancel"
                     },
                     "transactions": [{
                         "item_list": {
@@ -66,6 +66,7 @@ paymentRouter.post('/pay/:eventId', (req, res, next) => {
         .catch(err => next(err))
 });
 
+// $$$$$$$$$$$$$$$$$$ WHEN PURCHASE SUCCESS $$$$$$$$$$$$$$$$$$
 paymentRouter.get('/success', (req, res) => {
     const payerId = req.query.PayerID;
     const paymentId = req.query.paymentId;
@@ -95,4 +96,9 @@ paymentRouter.get('/success', (req, res) => {
             err => next(err))
         .catch(err => next(err))
 });
+
+// $$$$$$$$$$$$$$$$$$ WHEN PURCHASE CANCELLED $$$$$$$$$$$$$$$$$$
+paymentRouter.get('/cancel', (req, res, next) =>{
+    res.render('purchaseCancel');
+})
 module.exports = paymentRouter;
