@@ -12,43 +12,42 @@ eventRouter.use(express.json());
 //For testing purpose
 // const reqUserId = "41b6a7e0-59bc-4528-ae7e-b3fbe64303a8";
 // const reqUserId = "41b6a7e0-59bc-4528-ae7e-b3fbe64303b5";
-
-eventRouter.get('/', (req, res, next) => {
-    const limit = 5;
-    var queryValue = req.query.category ? {event_category: req.query.category} : null;
-    EVENT.findAll({
-        where: queryValue,
-        offset: (req.query.page - 1) * limit,
-        limit: limit,
-        include: [
-            {
-                model: USER,
-                // attributes: { exclude: ['password'] },
-                attributes: ['id', 'fullName', 'avatar', 'domain'],
-                through: { attributes: [] }
-            },
-
-            {
-                model: REVIEWS,
-                attributes: ['id'],
-
-            }
-        ]
-    })
-        .then((events) => {
-            if (events !== null) {
-                res.statusCode = 200;
-                res.setHeader('Content-Type', 'application/json');
-                res.json(events);
-            } else {
-                err = new Error(err);
-                next(err);
-            }
-        },
-            err => next(err))
-        .catch(err => next(err))
-})
 eventRouter.route('/')
+    .get((req, res, next) => {
+        const limit = 5;
+        var queryValue = req.query.category ? { event_category: req.query.category } : null;
+        EVENT.findAll({
+            where: queryValue,
+            offset: (req.query.page - 1) * limit,
+            limit: limit,
+            include: [
+                {
+                    model: USER,
+                    // attributes: { exclude: ['password'] },
+                    attributes: ['id', 'fullName', 'avatar', 'domain'],
+                    through: { attributes: [] }
+                },
+
+                {
+                    model: REVIEWS,
+                    attributes: ['id'],
+
+                }
+            ]
+        })
+            .then((events) => {
+                if (events !== null) {
+                    res.statusCode = 200;
+                    res.setHeader('Content-Type', 'application/json');
+                    res.json(events);
+                } else {
+                    err = new Error(err);
+                    next(err);
+                }
+            },
+                err => next(err))
+            .catch(err => next(err))
+    })
     .post(auth.verifyToken, auth.verifyAdmin, (req, res, next) => {
         if (!req.files) {
             EVENT.create(req.body)
