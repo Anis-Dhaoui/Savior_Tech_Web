@@ -4,21 +4,20 @@ const db = require('../models');
 const EVENT = db.Events;
 const PARTICIPANT = db.Participants;
 const USER = db.Users;
-const  REVIEWS = db.Reviews;
+const REVIEWS = db.Reviews;
 const shortUUID = require('short-uuid');
 const auth = require('../auth');
 const fs = require('fs');
-
+eventRouter.use(express.json());
 //For testing purpose
 // const reqUserId = "41b6a7e0-59bc-4528-ae7e-b3fbe64303a8";
 // const reqUserId = "41b6a7e0-59bc-4528-ae7e-b3fbe64303b5";
 
-eventRouter.use(express.json());
-
-
 eventRouter.get('/', (req, res, next) => {
     const limit = 5;
+    var queryValue = req.query.category ? {event_category: req.query.category} : null;
     EVENT.findAll({
+        where: queryValue,
         offset: (req.query.page - 1) * limit,
         limit: limit,
         include: [
@@ -100,7 +99,7 @@ eventRouter.route('/:eventId')
                 },
                 {
                     model: REVIEWS,
-                    attributes: {exclude:['EventId']}
+                    attributes: { exclude: ['EventId'] }
                 }
             ]
         })
