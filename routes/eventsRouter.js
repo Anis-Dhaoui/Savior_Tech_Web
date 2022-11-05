@@ -4,45 +4,50 @@ const db = require('../models');
 const EVENT = db.Events;
 const PARTICIPANT = db.Participants;
 const USER = db.Users;
+const REVIEWS = db.Reviews;
 const shortUUID = require('short-uuid');
 const auth = require('../auth');
 const fs = require('fs');
-
+eventRouter.use(express.json());
 //For testing purpose
 // const reqUserId = "41b6a7e0-59bc-4528-ae7e-b3fbe64303a8";
 // const reqUserId = "41b6a7e0-59bc-4528-ae7e-b3fbe64303b5";
-
-eventRouter.use(express.json());
-
-
-eventRouter.get('/page/:pagenb', (req, res, next) => {
-    const limit = 5;
-    EVENT.findAll({
-        offset: (req.params.pagenb - 1) * limit,
-        limit: limit,
-        include: [
-            {
-                model: USER,
-                // attributes: { exclude: ['password'] },
-                attributes: ['id', 'fullName', 'avatar', 'domain'],
-                through: { attributes: [] }
-            }
-        ]
-    })
-        .then((events) => {
-            if (events !== null) {
-                res.statusCode = 200;
-                res.setHeader('Content-Type', 'application/json');
-                res.json(events);
-            } else {
-                err = new Error(err);
-                next(err);
-            }
-        },
-            err => next(err))
-        .catch(err => next(err))
-})
 eventRouter.route('/')
+    .get((req, res, next) => {
+        const limit = 5;
+        var queryValue = req.query.category ? { event_category: req.query.category } : null;
+        EVENT.findAll({
+            where: queryValue,
+            offset: (req.query.page - 1) * limit,
+            limit: limit,
+            include: [
+                {
+                    model: USER,
+                    // attributes: { exclude: ['password'] },
+                    attributes: ['id', 'fullName', 'avatar', 'domain'],
+                    through: { attributes: [] }
+                },
+
+                {
+                    model: REVIEWS,
+                    attributes: ['id'],
+
+                }
+            ]
+        })
+            .then((events) => {
+                if (events !== null) {
+                    res.statusCode = 200;
+                    res.setHeader('Content-Type', 'application/json');
+                    res.json(events);
+                } else {
+                    err = new Error(err);
+                    next(err);
+                }
+            },
+                err => next(err))
+            .catch(err => next(err))
+    })
     .post(auth.verifyToken, auth.verifyAdmin, (req, res, next) => {
         if (!req.files) {
             EVENT.create(req.body)
@@ -90,6 +95,10 @@ eventRouter.route('/:eventId')
                     model: USER,
                     attributes: ['id', 'fullName', 'avatar', 'domain'],
                     through: { attributes: [] }
+                },
+                {
+                    model: REVIEWS,
+                    attributes: { exclude: ['EventId'] }
                 }
             ]
         })
@@ -119,6 +128,7 @@ eventRouter.route('/:eventId')
     .delete(auth.verifyToken, auth.verifyAdmin, (req, res, next) => {
         EVENT.findOne({ where: { id: req.params.eventId }, raw: true })
             .then((event) => {
+// REMOVE IMAGE IF EXIST
                 if (event.event_image != null) {
                     var imgWithPath = `public/images/upload/events/${event.event_image}`;
 
@@ -134,16 +144,17 @@ eventRouter.route('/:eventId')
                         console.log("image doesn't exist");
                     }
                 }
-            },
-                err => next(err))
-            .catch(err => next(err))
-
-        EVENT.destroy({ where: { id: req.params.eventId } })
-            .then((event) => {
-
-                res.statusCode = 200;
-                res.setHeader('Content-Type', 'application/json');
-                res.json({ success: true, message: "Event deleted successfully", deletedEvent: event });
+                
+// REMOVE THE SPECIFIED ANYWAYS
+                EVENT.destroy({ where: { id: req.params.eventId } })
+                .then((event) => {
+    
+                    res.statusCode = 200;
+                    res.setHeader('Content-Type', 'application/json');
+                    res.json({ success: true, message: "Event deleted successfully", deletedEvent: event });
+                },
+                    err => next(err))
+                .catch(err => next(err))
             },
                 err => next(err))
             .catch(err => next(err))

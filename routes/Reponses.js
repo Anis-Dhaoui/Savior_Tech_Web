@@ -19,12 +19,6 @@ router.post('/add', auth.verifyToken, (req, res) => {
     );
 });
 
-
-router.get('/', function(req, res, next) {
-    db.reponses.findAll().then((resp) => {
-        res.send(resp);
-    });
-});
 router.delete('/remove/:id', auth.verifyToken, (req, res) => {
     db.reponses.destroy({ where: { UserId: req.user.id,questionId : req.body.questionId} }).then(
         () => {
@@ -40,7 +34,7 @@ router.put('/update/:id',  auth.verifyToken,(req, res) => {
 
 });
 router.get('/detail/:id', function(req, res, next) {
-    db.reponses.findOne({ where: { id: req.params.id } }).then((resp) => {
+    db.reponses.findAll({ where: { questionId: req.params.id } }).then((resp) => {
         res.send(resp);
     });
 });
