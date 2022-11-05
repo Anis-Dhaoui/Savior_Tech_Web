@@ -23,11 +23,11 @@ const { where } = require('sequelize');
 router.post('/add', auth.verifyToken, (req, res) => {
 
   if (!req.files) {
-    if ((req.body.description !== "") || (req.body.titre !== "")) {
+    if (req.body.description !== "")  {
       db.Publications.create({
         titre: filter.clean(req.body.titre),
         description: filter.clean(req.body.description),
-        image: null,
+    
         statut: 'active',
         UserId: req.user.id
       }).then(
@@ -41,7 +41,7 @@ router.post('/add', auth.verifyToken, (req, res) => {
     }
   } else {
 
-    var file = req.files.image;
+    var file  = req.files.image;
     var imgName = `${shortUUID.generate()}.${file.mimetype.split('/')[1]}`;
 
     if (file.mimetype == "image/jpeg" || file.mimetype == "image/png" || file.mimetype == "image/gif") {
@@ -49,7 +49,7 @@ router.post('/add', auth.verifyToken, (req, res) => {
       file.mv('public/images/upload/publications/' + imgName, function (err) {
 
         {
-          if ((req.body.description !== "") || (req.body.titre)) {
+          if (req.body.description !== "") {
             db.Publications.create({
               titre: filter.clean(req.body.titre),
               description: filter.clean(req.body.description),
@@ -76,7 +76,8 @@ router.post('/add', auth.verifyToken, (req, res) => {
 
 router.get('/fetch', function (req, res, next) {
 
-  db.Publications.findAll({ where: { statut: 'active' } }).then((resp) => {
+
+  db.Publications.findAll({ where: { statut: 'active' }, order: [['createdAt', 'desc']] }).then((resp) => {
 
     res.send(resp);
 
@@ -119,7 +120,18 @@ router.get('/search/:searchTerm', function (req, res, next) {
 module.exports = router;
 
 
-// Notification
+//Notification 
 
-// Une liste des favoris     
+//uplod image
+//bad word
+
+
+//like dislike
+//bloque
+
+//controle de saisie
+//recherche multiple
+
+
+    
 
