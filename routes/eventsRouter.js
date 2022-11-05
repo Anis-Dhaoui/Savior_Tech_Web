@@ -128,6 +128,7 @@ eventRouter.route('/:eventId')
     .delete(auth.verifyToken, auth.verifyAdmin, (req, res, next) => {
         EVENT.findOne({ where: { id: req.params.eventId }, raw: true })
             .then((event) => {
+// REMOVE IMAGE IF EXIST
                 if (event.event_image != null) {
                     var imgWithPath = `public/images/upload/events/${event.event_image}`;
 
@@ -143,16 +144,17 @@ eventRouter.route('/:eventId')
                         console.log("image doesn't exist");
                     }
                 }
-            },
-                err => next(err))
-            .catch(err => next(err))
-
-        EVENT.destroy({ where: { id: req.params.eventId } })
-            .then((event) => {
-
-                res.statusCode = 200;
-                res.setHeader('Content-Type', 'application/json');
-                res.json({ success: true, message: "Event deleted successfully", deletedEvent: event });
+                
+// REMOVE THE SPECIFIED ANYWAYS
+                EVENT.destroy({ where: { id: req.params.eventId } })
+                .then((event) => {
+    
+                    res.statusCode = 200;
+                    res.setHeader('Content-Type', 'application/json');
+                    res.json({ success: true, message: "Event deleted successfully", deletedEvent: event });
+                },
+                    err => next(err))
+                .catch(err => next(err))
             },
                 err => next(err))
             .catch(err => next(err))
