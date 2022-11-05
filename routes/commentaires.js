@@ -17,8 +17,9 @@ router.post('/add', auth.verifyToken, (req, res) => {
   if (req.body.description !== "") {
     db.Commentaires.create({
       description: filter.clean(req.body.description),
-      UserId: req.user.id
-       }).then(
+      UserId: req.user.id,
+      PublicationId : req.body.PublicationId
+    }).then(
       (p) => {
         res.send(p);
         notifier.notify('commentaire ajouté');

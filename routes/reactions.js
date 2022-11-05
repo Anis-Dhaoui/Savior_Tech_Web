@@ -24,15 +24,15 @@ router.post('/add', auth.verifyToken, (req, res, next) => {
 })
 
 
-router.get('/fetchJaime', function (req, res, next) {
-  db.Reactions.findAndCountAll({ where: { reaction: "jaime" } }).then((resp) => {
-    res.send(resp);
+router.get('/fetchJaime/:id', function (req, res, next) {
+  db.Reactions.count({ where: { reaction: "jaime", PublicationId: req.params.id } }).then((count) => {
+    res.send("Nbr Jaime  " + count)
   });
 });
-router.get('/fetchJaimePas', function (req, res, next) {
-  db.Reactions.findAndCountAll({ where: { reaction: "jaimePas" } }).then((resp) => {
-    res.send(resp);
-  });
+router.get('/fetchJaimePas/:id', function (req, res, next) {
+  db.Reactions.count({ where: { reaction: "jaimePas", PublicationId: req.params.id } }).then((count) => {
+    res.send("Nbr Jaime pas " + count)
+  })
 });
 
 module.exports = router;
