@@ -8,7 +8,7 @@ exports.addReclamation = async (req, res) => {
     object: req.body.object,
     message: req.body.message,
     statut: false,
-    ownerId: req.profile.id,
+    ownerId: req.body.id,
   };
 
   let reclamation = await Reclamation.create(new_reclamation)
