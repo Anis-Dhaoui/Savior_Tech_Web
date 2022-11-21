@@ -6,6 +6,7 @@ var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 var bodyParser = require("body-parser");
 require("dotenv").config();
+var cors = require('cors');
 
 // var cronjob = require('./utils/reminder');
 
@@ -28,6 +29,7 @@ var ReponsesRouter = require('./routes/Reponses');
 var AimesRouter = require('./routes/Aimes');
 
 var app = express();
+app.use(cors());
 
 const db = require('./models');
 db.sequelize.sync().then(() => {

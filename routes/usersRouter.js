@@ -13,12 +13,21 @@ const fs = require('fs');
 
 
 // /users/ api endpoint
-userRouter.get('/chunk/:chunknbr', (req, res, next) => {
-  const limit = 3;
-  db.Users.findAll({
-    offset: (req.params.chunknbr - 1) * limit,
-    limit: limit,
+// userRouter.get('/chunk/:chunknbr', (req, res, next) => {
+//   const limit = 3;
+//   db.Users.findAll({
+//     offset: (req.params.chunknbr - 1) * limit,
+//     limit: limit,
 
+//     attributes: { exclude: ['RoleId'] },
+//     include: {
+//       model: db.Roles,
+//       attributes: ['roleName']
+//     }
+//   })
+
+userRouter.get('/', (req, res, next) => {
+  db.Users.findAll({
     attributes: { exclude: ['RoleId'] },
     include: {
       model: db.Roles,
@@ -71,7 +80,6 @@ userRouter.post('/signup', (req, res, next) => {
         res.json({ success: false, statusMsg: "Email is already exists" });
 
       } else if (user && user.phone == req.body.phone) {
-        console.log("jjjjjjjjjjjj")
         res.statusCode = 409;
         res.setHeader('Content-Type', 'application/json');
         res.json({ success: false, statusMsg: "Phone is already exists" });
@@ -155,7 +163,6 @@ userRouter.post('/signup', (req, res, next) => {
           }
 
         }
-
       }
     },
       err => next(err))
@@ -282,8 +289,8 @@ userRouter.post('/signin', (req, res, next) => {
 
 
 
-// $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$delete user with image$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-userRouter.route('/:userId')
+// $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ delete user with image $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+userRouter.route('/:userId')    
   .put(auth.verifyToken, (req, res, next) => {
     db.Users.update(req.body, { where: { id: req.user.id } })
       .then((user) => {
