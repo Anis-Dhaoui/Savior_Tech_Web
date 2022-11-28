@@ -75,15 +75,7 @@ eventRouter.route('/')
                     res.setHeader('Content-Type', 'application/json');
                     res.json({ success: true, message: "Event added successfully", event: event });
                 },
-                    err => {
-                        if (err.errors[0].message) {
-                            res.statusCode = 304;
-                            res.setHeader('Content-Type', 'application/json');
-                            res.json({ Error: err.errors[0].message })
-                        } else {
-                            next(err);
-                        }
-                    })
+                    err => next(err))
                 .catch(err => next(err));
         } else {
             var file = req.files.image;
