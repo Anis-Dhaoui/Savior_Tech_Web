@@ -23,11 +23,11 @@ const { where } = require('sequelize');
 router.post('/add', auth.verifyToken, (req, res) => {
 
   if (!req.files) {
-    if (req.body.description !== "")  {
+    if (req.body.description !== "") {
       db.Publications.create({
         titre: filter.clean(req.body.titre),
         description: filter.clean(req.body.description),
-    
+
         statut: 'active',
         UserId: req.user.id
       }).then(
@@ -41,7 +41,7 @@ router.post('/add', auth.verifyToken, (req, res) => {
     }
   } else {
 
-    var file  = req.files.image;
+    var file = req.files.image;
     var imgName = `${shortUUID.generate()}.${file.mimetype.split('/')[1]}`;
 
     if (file.mimetype == "image/jpeg" || file.mimetype == "image/png" || file.mimetype == "image/gif") {
@@ -120,7 +120,7 @@ router.get('/search/:searchTerm', function (req, res, next) {
 module.exports = router;
 
 
-//Notification 
+//Notification
 
 //uplod image
 //bad word
@@ -133,5 +133,5 @@ module.exports = router;
 //recherche multiple
 
 
-    
+
 

@@ -20,35 +20,43 @@ module.exports = (sequelize, DataTypes) => {
         },
         event_description: {
             type: DataTypes.TEXT,
-            allowNull: false
+            allowNull: true,
+            defaultValue: "TEST"
         },
         event_start_date: {
             type: DataTypes.DATE,
-            allowNull: false
+            allowNull: true,
+            defaultValue: "11/12/2022"
         },
         event_end_date: {
             type: DataTypes.DATE,
-            allowNull: false
+            allowNull: true,
+            defaultValue: "11/12/2023"
         },
         event_status: {
             type: DataTypes.STRING,
-            allowNull: false
+            allowNull: true,
+            defaultValue: "TEST"
         },
         event_location: {
             type: DataTypes.STRING,
-            allowNull: false
+            allowNull: true,
+            defaultValue: "TEST"
         },
         event_price: {
             type: DataTypes.INTEGER,
-            allowNull: false
+            allowNull: true,
+            defaultValue: 200
         },
         event_orgoniser: {
             type: DataTypes.STRING,
-            allowNull: false
+            allowNull: true,
+            defaultValue: "TEST"
         },
         event_max_participant: {
             type: DataTypes.INTEGER,
-            allowNull: false
+            allowNull: true,
+            defaultValue: 200
         },
     }
     );
