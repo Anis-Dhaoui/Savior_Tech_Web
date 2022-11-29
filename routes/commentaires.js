@@ -13,11 +13,12 @@ filter.addWords(...words);
 const notifier = require('node-notifier')
 
 
-router.post('/add', auth.verifyToken, (req, res) => {
+router.post('/add',  (req, res) => {
   if (req.body.description !== "") {
     db.Commentaires.create({
       description: filter.clean(req.body.description),
-      UserId: req.user.id,
+    //  UserId: req.user.id,
+      UserId: req.body.id,
       PublicationId : req.body.PublicationId
     }).then(
       (p) => {
