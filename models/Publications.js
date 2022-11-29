@@ -27,7 +27,7 @@ module.exports = (sequelize, DataTypes) => {
     Publications.associate = models => {
         Publications.hasMany(models.Commentaires, { onDelete: "cascade" })
         Publications.hasMany(models.Reactions, { onDelete: "cascade" })
-        Publications.hasMany(models.Signaler, { onDelete: "cascade" })
+        Publications.hasMany(models.Signaler, { onDelete: "cascade", onUpdate: 'cascade'  })
         Publications.belongsTo(models.Users, { onDelete: "cascade" })
 
     }
