@@ -9,17 +9,36 @@ const shortUUID = require('short-uuid');
 const auth = require('../auth');
 const fs = require('fs');
 eventRouter.use(express.json());
+console.log(process.env.SMSSENDER)
 //For testing purpose
 // const reqUserId = "41b6a7e0-59bc-4528-ae7e-b3fbe64303a8";
 // const reqUserId = "41b6a7e0-59bc-4528-ae7e-b3fbe64303b5";
+
 eventRouter.route('/')
+    // .get((req, res, next) => {
+    //     const limit = 5;
+    //     var queryValue = req.query.category ? { event_category: req.query.category } : null;
+    //     EVENT.findAll({
+    //         where: queryValue,
+    //         offset: (req.query.page - 1) * limit,
+    //         limit: limit,
+    //         include: [
+    //             {
+    //                 model: USER,
+    //                 // attributes: { exclude: ['password'] },
+    //                 attributes: ['id', 'fullName', 'avatar', 'domain'],
+    //                 through: { attributes: [] }
+    //             },
+
+    //             {
+    //                 model: REVIEWS,
+    //                 attributes: ['id', 'rating'],
+
+    //             }
+    //         ]
+    //     })
     .get((req, res, next) => {
-        const limit = 5;
-        var queryValue = req.query.category ? { event_category: req.query.category } : null;
         EVENT.findAll({
-            where: queryValue,
-            offset: (req.query.page - 1) * limit,
-            limit: limit,
             include: [
                 {
                     model: USER,
@@ -30,7 +49,7 @@ eventRouter.route('/')
 
                 {
                     model: REVIEWS,
-                    attributes: ['id'],
+                    attributes: ['id', 'rating'],
 
                 }
             ]
@@ -48,7 +67,7 @@ eventRouter.route('/')
                 err => next(err))
             .catch(err => next(err))
     })
-    .post(auth.verifyToken, auth.verifyAdmin, (req, res, next) => {
+    .post((req, res, next) => {
         if (!req.files) {
             EVENT.create(req.body)
                 .then((event) => {
@@ -128,7 +147,7 @@ eventRouter.route('/:eventId')
     .delete(auth.verifyToken, auth.verifyAdmin, (req, res, next) => {
         EVENT.findOne({ where: { id: req.params.eventId }, raw: true })
             .then((event) => {
-// REMOVE IMAGE IF EXIST
+                // REMOVE IMAGE IF EXIST
                 if (event.event_image != null) {
                     var imgWithPath = `public/images/upload/events/${event.event_image}`;
 
@@ -144,17 +163,17 @@ eventRouter.route('/:eventId')
                         console.log("image doesn't exist");
                     }
                 }
-                
-// REMOVE THE SPECIFIED ANYWAYS
+
+                // REMOVE THE SPECIFIED ANYWAYS
                 EVENT.destroy({ where: { id: req.params.eventId } })
-                .then((event) => {
-    
-                    res.statusCode = 200;
-                    res.setHeader('Content-Type', 'application/json');
-                    res.json({ success: true, message: "Event deleted successfully", deletedEvent: event });
-                },
-                    err => next(err))
-                .catch(err => next(err))
+                    .then((event) => {
+
+                        res.statusCode = 200;
+                        res.setHeader('Content-Type', 'application/json');
+                        res.json({ success: true, message: "Event deleted successfully", deletedEvent: event });
+                    },
+                        err => next(err))
+                    .catch(err => next(err))
             },
                 err => next(err))
             .catch(err => next(err))

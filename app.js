@@ -7,6 +7,7 @@ var logger = require('morgan');
 var bodyParser = require("body-parser");
 var cors = require('cors');
 require("dotenv").config();
+var cors = require('cors');
 
 // var cronjob = require('./utils/reminder');
 
@@ -29,7 +30,9 @@ var ReponsesRouter = require('./routes/Reponses');
 var AimesRouter = require('./routes/Aimes');
 
 var app = express();
-    app.use(cors());
+  app.use(cors());
+app.use(cors());
+
 const db = require('./models');
 db.sequelize.sync().then(() => {
     console.log('Connection has been established successfully.');
