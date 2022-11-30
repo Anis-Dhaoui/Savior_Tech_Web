@@ -15,7 +15,7 @@ module.exports = (sequelize, DataTypes) => {
     );
     Signaler.associate = models => {
         Signaler.belongsTo(models.Users, { onDelete: "cascade" })
-        Signaler.belongsTo(models.Publications,{onDelete:"cascade"})
+        Signaler.belongsTo(models.Publications,{onDelete:"cascade",onUpdate: 'cascade' })
     }
 
 
