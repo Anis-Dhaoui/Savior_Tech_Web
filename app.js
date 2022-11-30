@@ -51,6 +51,9 @@ app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(fileUpload());
 
+// $$$$$$$ Handle images path $$$$$$$$
+app.use(express.static(path.join(__dirname, 'public')));
+
 app.use('/events', eventRouter);
 app.use('/reviews', reviewRouter);
 app.use('/payment', paymentRouter);
