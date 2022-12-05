@@ -100,7 +100,7 @@ userRouter.post('/signup', (req, res, next) => {
             domain: req.body.domain,
             interest: req.body.interest,
             speciality: req.body.speciality,
-            confirResetPassCode: confirCode,
+            confirEmailCode: confirCode,
             confirSmsCode: smsConfirCode,
             RoleId: req.body.RoleId
           })
@@ -138,7 +138,7 @@ userRouter.post('/signup', (req, res, next) => {
                   domain: req.body.domain,
                   interest: req.body.interest,
                   speciality: req.body.speciality,
-                  confirResetPassCode: confirCode,
+                  confirEmailCode: confirCode,
                   confirSmsCode: smsConfirCode,
                   RoleId: req.body.RoleId
                 })
@@ -237,7 +237,7 @@ userRouter.post('/signin', (req, res, next) => {
         res.json({ success: false, statusMsg: "username does not exist" });
 
       } else if (user.status === "pending") {
-        res.statusCode = 202;
+        res.statusCode = 403;
         res.setHeader('Content-Type', 'application/json');
         res.json({ success: false, statusMsg: "Please verify your email" });
 
@@ -264,6 +264,7 @@ userRouter.post('/signin', (req, res, next) => {
             avatar: user.avatar,
             username: user.username,
             email: user.email,
+            phone:user.phone,
             domain: user.domain,
             interest: user.interest,
             speciality: user.speciality,
@@ -302,7 +303,8 @@ userRouter.route('/:userId')
       .catch(err => next(err))
   })
 
-  .delete(auth.verifyToken, auth.verifyAdmin, (req, res, next) => {
+  // .delete(auth.verifyToken, auth.verifyAdmin, (req, res, next) => {
+    .delete((req, res, next) => {
     db.Users.findOne({ where: { id: req.params.userId }, raw: true })
       .then((user) => {
         if (user.avatar != null) {
@@ -337,8 +339,8 @@ userRouter.route('/:userId')
 
 
 //$$$$$$$$$$$$$$$ block user $$$$$$$$$$$$$$$$$$$$$$//
-
-userRouter.put('/block/:userId', auth.verifyToken, auth.verifyAdmin, (req, res, next) => {
+// , auth.verifyToken, auth.verifyAdmin,
+userRouter.put('/block/:userId' ,(req, res, next) => {
   db.Users.update({ status: "blocked" }, { where: { id: req.params.userId } })
     .then((user) => {
       res.statusCode = 200;
