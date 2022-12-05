@@ -18,13 +18,15 @@ const notifier = require("node-notifier");
 var auth = require("../auth");
 const { where } = require("sequelize");
 
-router.post("/add", (req, res) => {
-  if (!file) {
+router.post("/add", auth.verifyToken,(req, res) => {
+  
+  if (! req.files) {
     if (req.body.description !== "") {
       db.Publications.create({
         titre: filter.clean(req.body.titre),
         description: filter.clean(req.body.description),
         statut: "active",
+        UserId: req.user.id,
       }).then((p) => {
         res.send(p);
         notifier.notify("publié");
@@ -33,8 +35,8 @@ router.post("/add", (req, res) => {
       res.send("Ajouter un sujet ....");
     }
   } else {
-    var file = req.files.image;
-    var imgName = `${shortUUID.generate()}.${file.mimetype.split("/")[1]}`;
+     file = req.files.image;
+    imgName = `${shortUUID.generate()}.${file.mimetype.split("/")[1]}`;
 
     if (
       file.mimetype == "image/jpeg" ||
@@ -72,7 +74,7 @@ router.get("/fetch", function (req, res, next) {
   });
 });
 
-router.delete("/remove/:id", (req, res) => {
+router.delete("/remove/:id",auth.verifyToken, (req, res) => {
   db.Publications.update(
     { statut: "deactive" },
     { where: { id: req.params.id } }
@@ -81,15 +83,13 @@ router.delete("/remove/:id", (req, res) => {
   });
 });
 
-
-router.put("/update/:id",  (req, res) => {
+router.put("/update/:id", auth.verifyToken,(req, res) => {
   db.Publications.update(req.body, { where: { id: req.params.id } }).then(
     () => {
       res.json("updated");
     }
   );
 });
-
 
 router.get("/detail/:id", function (req, res, next) {
   db.Publications.findOne({ where: { id: req.params.id } }).then((resp) => {
@@ -114,7 +114,6 @@ router.get("/search/:searchTerm", function (req, res, next) {
 
 module.exports = router;
 
-
 //Notification
 
 //uplod image
@@ -125,7 +124,3 @@ module.exports = router;
 
 //controle de saisie
 //recherche multiple
-
-
-
-

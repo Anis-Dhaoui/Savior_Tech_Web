@@ -16,7 +16,7 @@ var reviewRouter = require('./routes/eventReviewsRouter');
 var paymentRouter = require('./routes/paymentRouter');
 
 var userRouter = require('./routes/usersRouter');
-var roleRouter = require('./routes/roleRouter');
+// var roleRouter = require('./routes/roleRouter');
 
 var publicationsRouter = require('./routes/publications');
 var CommentairesRouter = require('./routes/commentaires');
@@ -53,15 +53,12 @@ app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(fileUpload());
 
-// $$$$$$$ Handle images path $$$$$$$$
-app.use(express.static(path.join(__dirname, 'public')));
-
 app.use('/events', eventRouter);
 app.use('/reviews', reviewRouter);
 app.use('/payment', paymentRouter);
 
 app.use('/users', userRouter);
-app.use('/roles', roleRouter);
+// app.use('/roles', roleRouter);
 
 app.use('/publications', publicationsRouter);
 app.use('/commentaires', CommentairesRouter);

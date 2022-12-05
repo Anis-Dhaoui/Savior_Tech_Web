@@ -6,31 +6,31 @@ var auth = require("../auth");
 const { where } = require("sequelize");
 const Reactions = require("../models/Reactions");
 
-router.post("/add", (req, res, next) => {
+router.post("/add", auth.verifyToken, (req, res, next) => {
   db.Reactions.count({
     where: {
       PublicationId: req.body.PublicationId,
-      UserId: req.body.UserId,
+       UserId: req.user.id,
     },
   }).then((count) => {
     if (count != 0) {
       db.Reactions.destroy({
         where: {
           PublicationId: req.body.PublicationId,
-          UserId: req.body.UserId,
+            UserId: req.user.id,
         },
       }).then(() => {
         db.Reactions.create({
           reaction: req.body.reaction,
           PublicationId: req.body.PublicationId,
-          UserId: req.body.UserId,
+           UserId: req.user.id,
         });
       });
     } else {
       db.Reactions.create({
         reaction: req.body.reaction,
         PublicationId: req.body.PublicationId,
-        UserId: req.body.UserId,
+          UserId: req.user.id,
       });
     }
   });
