@@ -14,8 +14,7 @@ exports.getToken = (user) => {
 
 // ***************************************** Start verify if user authenticated *****************************************
 exports.verifyToken = async (req, res, next) => {
-    let token = req.headers.bearer;
-    // console.log(req.headers.bearer);
+    let token = req.headers.authorization.split(" ")[1];
 
     if (!token) {
         return res.status(403).send({
