@@ -10,9 +10,9 @@ module.exports = (sequelize, DataTypes) => {
             allowNull: false
         }
     });
-    Roles.associate = models => {
-        Roles.hasMany(models.Users, { onDelete: "cascade" })
+    // Roles.associate = models => {
+    //     Roles.hasMany(models.Users, { onDelete: "cascade" })
 
-    }
+    // }
     return Roles;
 }

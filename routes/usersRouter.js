@@ -27,13 +27,7 @@ const fs = require('fs');
 //   })
 
 userRouter.get('/', (req, res, next) => {
-  db.Users.findAll({
-    attributes: { exclude: ['RoleId'] },
-    include: {
-      model: db.Roles,
-      attributes: ['roleName']
-    }
-  })
+  db.Users.findAll()
     .then((users) => {
       if (users !== null) {
         res.statusCode = 200;
@@ -102,7 +96,7 @@ userRouter.post('/signup', (req, res, next) => {
             speciality: req.body.speciality,
             confirEmailCode: confirCode,
             confirSmsCode: smsConfirCode,
-            RoleId: req.body.RoleId
+            role: req.body.role
           })
             .then((user) => {
               const message =
@@ -140,7 +134,7 @@ userRouter.post('/signup', (req, res, next) => {
                   speciality: req.body.speciality,
                   confirEmailCode: confirCode,
                   confirSmsCode: smsConfirCode,
-                  RoleId: req.body.RoleId
+                  role: req.body.role
                 })
                   .then((user) => {
                     const message =
@@ -225,11 +219,7 @@ userRouter.get('/verifysms/:smsCode', (req, res, next) => {
 // $$$$$$$$$$$$$$$$$$$ SIGNIN $$$$$$$$$$$$$$$$$$$
 userRouter.post('/signin', (req, res, next) => {
   db.Users.findOne({
-    where: { username: req.body.username },
-    include: db.Roles,
-    raw: true,
-    nest: true
-  })
+    where: { username: req.body.username }})
     .then((user) => {
       if (!user) {
         res.statusCode = 404;
@@ -268,7 +258,7 @@ userRouter.post('/signin', (req, res, next) => {
             domain: user.domain,
             interest: user.interest,
             speciality: user.speciality,
-            role: user.Role.roleName,
+            role: user.role,
             admin: user.admin,
             status: user.status
           };
