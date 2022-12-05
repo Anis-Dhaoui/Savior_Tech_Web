@@ -32,7 +32,7 @@ exports.verifyToken = async (req, res, next) => {
         req.user = await db.Users.findOne({
             where: { id: decoded.id },
             raw: true,
-            include: { model: db.Roles },
+            // include: { model: db.Roles },
             attributes: { exclude: ['password'] }
         });
 

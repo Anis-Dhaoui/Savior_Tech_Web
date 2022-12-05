@@ -54,6 +54,10 @@ module.exports = (sequelize, DataTypes) => {
             type: DataTypes.BOOLEAN,
             defaultValue: false
         },
+       role: {
+            type: DataTypes.STRING,
+            defaultValue: 'coach'
+        },
         status: {
             type: DataTypes.STRING,
             defaultValue: "pending",
@@ -75,7 +79,7 @@ module.exports = (sequelize, DataTypes) => {
         Users.belongsToMany(models.Events, { through: models.Participants })
         Users.hasMany(models.Reviews, { onDelete: "cascade" })
 
-        Users.belongsTo(models.Roles, { onDelete: "cascade" })
+        // Users.belongsTo(models.Roles, { onDelete: "cascade" })
 
         Users.hasMany(models.Publications, { onDelete: "cascade" })
         Users.hasMany(models.Commentaires, { onDelete: "cascade" })
