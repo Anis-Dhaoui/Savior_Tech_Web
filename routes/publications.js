@@ -18,15 +18,14 @@ const notifier = require("node-notifier");
 var auth = require("../auth");
 const { where } = require("sequelize");
 
-router.post("/add", auth.verifyToken,(req, res) => {
-  
-  if (! req.files) {
+router.post("/add",(req, res) => {
+  if (!req.files) {
     if (req.body.description !== "") {
       db.Publications.create({
         titre: filter.clean(req.body.titre),
         description: filter.clean(req.body.description),
         statut: "active",
-        UserId: req.user.id,
+       // UserId: req.user.id,
       }).then((p) => {
         res.send(p);
         notifier.notify("publié");
@@ -35,7 +34,7 @@ router.post("/add", auth.verifyToken,(req, res) => {
       res.send("Ajouter un sujet ....");
     }
   } else {
-     file = req.files.image;
+    file = req.files.image;
     imgName = `${shortUUID.generate()}.${file.mimetype.split("/")[1]}`;
 
     if (
@@ -51,7 +50,7 @@ router.post("/add", auth.verifyToken,(req, res) => {
               description: filter.clean(req.body.description),
               image: imgName,
               statut: "active",
-              UserId: req.user.id,
+            //  UserId: req.user.id,
             }).then((p) => {
               res.send(p);
               notifier.notify("publié");
@@ -61,6 +60,8 @@ router.post("/add", auth.verifyToken,(req, res) => {
           }
         }
       });
+    }else{
+      res.send("type doit etre png , jpg ,gif");
     }
   }
 });
@@ -74,7 +75,7 @@ router.get("/fetch", function (req, res, next) {
   });
 });
 
-router.delete("/remove/:id",auth.verifyToken, (req, res) => {
+router.delete("/remove/:id", auth.verifyToken, (req, res) => {
   db.Publications.update(
     { statut: "deactive" },
     { where: { id: req.params.id } }
@@ -83,7 +84,7 @@ router.delete("/remove/:id",auth.verifyToken, (req, res) => {
   });
 });
 
-router.put("/update/:id", auth.verifyToken,(req, res) => {
+router.put("/update/:id", auth.verifyToken, (req, res) => {
   db.Publications.update(req.body, { where: { id: req.params.id } }).then(
     () => {
       res.json("updated");
