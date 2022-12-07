@@ -7,6 +7,7 @@ router.post('/add', auth.verifyToken, (req, res) => {
     db.aimes.findOne({ where: { questionId : req.body.questionId,UserId: req.user.id } }).then((resp) => {
         if (!resp) {
             db.aimes.create({
+                reaction:req.body.reaction,
                 questionId : req.body.questionId,
                 UserId: req.user.id
         }).then(
@@ -16,7 +17,7 @@ router.post('/add', auth.verifyToken, (req, res) => {
             );
         }
         else{
-            res.send("j'aime")
+            res.send(resp)
         }
     });
 

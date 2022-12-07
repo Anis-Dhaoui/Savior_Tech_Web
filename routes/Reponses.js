@@ -1,6 +1,8 @@
 var express = require('express');
 var router = express.Router();
 var db = require('../models');
+const Question=db.questions;
+const USER = db.Users;
 var auth = require('../auth');
 const Filter = require("bad-words");
 const filter = new Filter();
@@ -33,8 +35,22 @@ router.put('/update/:id',  auth.verifyToken,(req, res) => {
         });
 
 });
-router.get('/detail/:id', function(req, res, next) {
-    db.reponses.findAll({ where: { questionId: req.params.id } }).then((resp) => {
+router.get('/:id', function(req, res, next) {
+    db.reponses.findAll({ 
+           include: [
+        
+        {
+            model: USER,
+            // attributes: { exclude: ['password'] },
+            attributes: ['id', 'fullName', 'username', 'avatar']
+        },
+        {
+            model:Question,
+            // attributes: { exclude: ['password'] },
+            attributes: ['UserId']
+        },
+       
+    ], where: { questionId: req.params.id }, order: [['createdAt']] }).then((resp) => {
         res.send(resp);
     });
 });

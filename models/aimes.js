@@ -6,7 +6,6 @@ module.exports = (sequelize, DataTypes) => {
                 defaultValue: DataTypes.UUIDV4,
                 primaryKey: true
             },
-
         }
     );
     aimes.associate = models => {

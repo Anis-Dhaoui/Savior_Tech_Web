@@ -1,6 +1,8 @@
 var express = require('express');
 var router = express.Router();
 var db = require('../models');
+const USER = db.Users;
+const reponses = db.Reponses;
 var auth = require('../auth');
 const shortUUID = require('short-uuid');
 const Filter = require("bad-words");
@@ -16,7 +18,7 @@ const notifier = require('node-notifier');
 
 
 router.post('/add', auth.verifyToken, (req, res) => {
-    if (!req.files) {
+    if (!req.body.image) {
         db.questions.create({
             description: filter.clean(req.body.description),
             titre: req.body.titre,
@@ -28,19 +30,19 @@ router.post('/add', auth.verifyToken, (req, res) => {
             }
         );
     } else {
+       // var file = req.files.image;
+        
+      //  var img_name = `${shortUUID.generate()}${file.name}`;
 
-        var file = req.files.image;
-        var img_name = `${shortUUID.generate()}-${req.user.id}.${file.mimetype.split('/')[1]}`;
+        //if (file.mimetype == "image/jpeg" || file.mimetype == "image/png" || file.mimetype == "image/gif") {
 
-        if (file.mimetype == "image/jpeg" || file.mimetype == "image/png" || file.mimetype == "image/gif") {
-
-            file.mv('public/images/upload/questions/' + img_name, function(err) {
+           // file.mv('public/images/upload/questions/' + file.name, function(err) {
 
                 {
                     db.questions.create({
                         description: filter.clean(req.body.description),
                         titre: req.body.titre,
-                        image: img_name,
+                        image: req.body.image,
                         UserId: req.user.id
                     }).then(
                         (p) => {
@@ -49,39 +51,25 @@ router.post('/add', auth.verifyToken, (req, res) => {
                         }
                     );
                 }
-            });
-        }
+           // });
+       // }
     }
-    notifier.notify(
-        {
-          title: 'Ajouter Question',
-          subtitle: 'Ajouter Question',
-          message: 'Votre Question a été ajouter',
-          sound: true, // Case Sensitive string for location of sound file, or use one of macOS' native sounds (see below)
-          icon: 'Terminal Icon', // Absolute Path to Triggering Icon
-          contentImage: undefined, // Absolute Path to Attached Image (Content Image)
-          open: undefined, // URL to open on Click
-          wait: false, // Wait for User Action against Notification or times out. Same as timeout = 5 seconds
-      
-          // New in latest version. See `example/macInput.js` for usage
-          timeout: 5, // Takes precedence over wait if both are defined.
-          closeLabel: undefined, // String. Label for cancel button
-          actions: undefined, // String | Array<String>. Action label or list of labels in case of dropdown
-          dropdownLabel: undefined, // String. Label to be used if multiple actions
-          reply: false // Boolean. If notification should take input. Value passed as third argument in callback and event emitter.
-        },
-        function (error, response, metadata) {
-          console.log(response, metadata);
-        }
-      );
       
 });
 
 router.get('/', function(req, res, next) {
-    db.questions.findAll({ where: { status: "actif" } }).then((resp) => {
+    db.questions.findAll(
+        {     include: [
+            {
+                model: USER,
+                // attributes: { exclude: ['password'] },
+                attributes: ['id', 'fullName', 'avatar']
+            }
+           
+        ], where: { status: "actif" }, order: [['createdAt', 'desc']] }).then((resp) => {
         res.statusCode = 200;
-        res.json({resp
-        });
+        res.send(resp);
+       
        /* notifier.notify({
             title: 'My notification',
             message: 'Hello, there!'
@@ -126,17 +114,18 @@ router.put('/update/:Questionid', auth.verifyToken, (req, res) => {
             err => next(err))
       
         var file = req.files.image;
+        
         var img_name = `${shortUUID.generate()}-${req.user.id}.${file.mimetype.split('/')[1]}`;
 
         if (file.mimetype == "image/jpeg" || file.mimetype == "image/png" || file.mimetype == "image/gif") {
 
-            file.mv('public/images/upload/questions/' + img_name, function(err) {
+            file.mv('public/images/upload/questions/' + file.name, function(err) {
 
                 {
                     db.questions.update({
                         description: filter.clean(req.body.description),
                         titre: req.body.titre,
-                        image: img_name
+                        image: file.name
                     }, 
                     { where: {id: req.params.Questionid, UserId: req.user.id,status: "actif"} }).then(
                         () => {
@@ -149,9 +138,16 @@ router.put('/update/:Questionid', auth.verifyToken, (req, res) => {
     }
 });
 router.get('/detail/:Questionid', function(req, res, next) {
-    db.questions.findOne({ where: { id: req.params.Questionid,status: "actif" } }).then((resp) => {
+    db.questions.findOne({  include: [
+        {
+            model: USER,
+            // attributes: { exclude: ['password'] },
+            attributes: ['id', 'fullName', 'avatar']
+        }
+       
+    ], where: { id: req.params.Questionid,status: "actif" } }).then((resp) => {
         res.statusCode = 200;
-        res.json({resp});
+        res.send(resp);
         
     });
 });
