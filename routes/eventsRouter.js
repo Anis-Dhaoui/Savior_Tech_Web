@@ -69,41 +69,63 @@ eventRouter.route('/')
     })
 
 
+    // .post((req, res, next) => {
+    //     EVENT.findOne({ where: { event_title: req.body.event_title } })
+    //         .then((event) => {
+    //             if (!event) {
+    //                 if (!req.files) {
+    //                     EVENT.create(req.body)
+    //                         .then((event) => {
+    //                             res.statusCode = 200;
+    //                             res.setHeader('Content-Type', 'application/json');
+    //                             res.json({ success: true, message: "Event added successfully", event: event });
+    //                         },
+    //                             err => next(err))
+    //                         .catch(err => next(err));
+    //                 } else {
+    //                     var file = req.files.image;
+    //                     var imageName = `${shortUUID.generate()}-${req.user.id}.${file.mimetype.split('/')[1]}`;
+    //                     if (file.mimetype == "image/jpeg" || file.mimetype == "image/png" || file.mimetype == "image/gif") {
+    //                         file.mv('public/images/upload/events/' + imageName, (err) => {
+    //                             if (err) {
+    //                                 next(err)
+    //                             } else {
+    //                                 req.body.event_image = imageName;
+    //                                 EVENT.create(req.body)
+    //                                     .then((event) => {
+    //                                         res.statusCode = 200;
+    //                                         res.setHeader('Content-Type', 'application/json');
+    //                                         res.json({ success: true, message: "Event added successfully", event: event });
+    //                                     },
+    //                                         err => next(err))
+    //                                     .catch(err => next(err));
+
+    //                             }
+    //                         })
+    //                     }
+    //                 }
+    //             } else {
+    //                 res.statusCode = 409;
+    //                 res.setHeader('Content-Type', 'application/json');
+    //                 res.json({ success: false, message: "Event title is already exists" });
+    //             }
+    //         },
+    //             err => next(err))
+    // });
+
     .post((req, res, next) => {
         EVENT.findOne({ where: { event_title: req.body.event_title } })
             .then((event) => {
                 if (!event) {
-                    if (!req.files) {
-                        EVENT.create(req.body)
-                            .then((event) => {
-                                res.statusCode = 200;
-                                res.setHeader('Content-Type', 'application/json');
-                                res.json({ success: true, message: "Event added successfully", event: event });
-                            },
-                                err => next(err))
-                            .catch(err => next(err));
-                    } else {
-                        var file = req.files.image;
-                        var imageName = `${shortUUID.generate()}-${req.user.id}.${file.mimetype.split('/')[1]}`;
-                        if (file.mimetype == "image/jpeg" || file.mimetype == "image/png" || file.mimetype == "image/gif") {
-                            file.mv('public/images/upload/events/' + imageName, (err) => {
-                                if (err) {
-                                    next(err)
-                                } else {
-                                    req.body.event_image = imageName;
-                                    EVENT.create(req.body)
-                                        .then((event) => {
-                                            res.statusCode = 200;
-                                            res.setHeader('Content-Type', 'application/json');
-                                            res.json({ success: true, message: "Event added successfully", event: event });
-                                        },
-                                            err => next(err))
-                                        .catch(err => next(err));
-
-                                }
-                            })
-                        }
-                    }
+                    console.log(req.body.event_image);
+                    EVENT.create(req.body)
+                        .then((event) => {
+                            res.statusCode = 200;
+                            res.setHeader('Content-Type', 'application/json');
+                            res.json({ success: true, message: "Event added successfully", event: event });
+                        },
+                            err => next(err))
+                        .catch(err => next(err));
                 } else {
                     res.statusCode = 409;
                     res.setHeader('Content-Type', 'application/json');
@@ -112,6 +134,7 @@ eventRouter.route('/')
             },
                 err => next(err))
     });
+
 
 
 
