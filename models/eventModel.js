@@ -12,7 +12,7 @@ module.exports = (sequelize, DataTypes) => {
         },
         event_image: {
             type: DataTypes.STRING,
-            defaultValue: null
+            allowNull: false,
         },
         event_category: {
             type: DataTypes.STRING,
@@ -20,43 +20,35 @@ module.exports = (sequelize, DataTypes) => {
         },
         event_description: {
             type: DataTypes.TEXT,
-            allowNull: true,
-            defaultValue: "TEST"
+            allowNull: false,
         },
         event_start_date: {
             type: DataTypes.DATE,
-            allowNull: true,
-            defaultValue: "11/12/2022"
+            allowNull: false,
         },
         event_end_date: {
             type: DataTypes.DATE,
-            allowNull: true,
-            defaultValue: "11/12/2023"
+            allowNull: false,
         },
         event_status: {
             type: DataTypes.STRING,
-            allowNull: true,
-            defaultValue: "TEST"
+            allowNull: false,
         },
         event_location: {
             type: DataTypes.STRING,
-            allowNull: true,
-            defaultValue: "TEST"
+            allowNull: false,
         },
         event_price: {
             type: DataTypes.INTEGER,
-            allowNull: true,
-            defaultValue: 200
+            allowNull: false,
         },
         event_orgoniser: {
             type: DataTypes.STRING,
-            allowNull: true,
-            defaultValue: "TEST"
+            allowNull: false,
         },
         event_max_participant: {
             type: DataTypes.INTEGER,
-            allowNull: true,
-            defaultValue: 200
+            allowNull: false,
         },
     }
     );
