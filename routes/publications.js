@@ -18,7 +18,7 @@ const notifier = require("node-notifier");
 var auth = require("../auth");
 const { where } = require("sequelize");
 
-router.post("/add",(req, res) => {
+router.post("/add",auth.verifyToken,(req, res) => {
   if (!req.files) {
     if (req.body.description !== "") {
       db.Publications.create({
@@ -44,6 +44,7 @@ router.post("/add",(req, res) => {
     ) {
       file.mv("public/images/upload/publications/" + imgName, function (err) {
         {
+          console.log("image"+imgName)
           if (req.body.description !== "") {
             db.Publications.create({
               titre: filter.clean(req.body.titre),
