@@ -18,52 +18,20 @@ const notifier = require("node-notifier");
 var auth = require("../auth");
 const { where } = require("sequelize");
 
-router.post("/add",auth.verifyToken,(req, res) => {
-  if (!req.files) {
-    if (req.body.description !== "") {
-      db.Publications.create({
-        titre: filter.clean(req.body.titre),
-        description: filter.clean(req.body.description),
-        statut: "active",
-       // UserId: req.user.id,
-      }).then((p) => {
-        res.send(p);
-        notifier.notify("publié");
-      });
-    } else {
-      res.send("Ajouter un sujet ....");
-    }
+router.post("/add", auth.verifyToken, (req, res) => {
+  if (req.body.description !== "") {
+    db.Publications.create({
+      titre: filter.clean(req.body.titre),
+      description: filter.clean(req.body.description),
+      image: req.body.image,
+      statut: "active",
+      UserId: req.user.id,
+    }).then((p) => {
+      res.send(p);
+      notifier.notify("publié");
+    });
   } else {
-    file = req.files.image;
-    imgName = `${shortUUID.generate()}.${file.mimetype.split("/")[1]}`;
-
-    if (
-      file.mimetype == "image/jpeg" ||
-      file.mimetype == "image/png" ||
-      file.mimetype == "image/gif"
-    ) {
-      file.mv("public/images/upload/publications/" + imgName, function (err) {
-        {
-          console.log("image"+imgName)
-          if (req.body.description !== "") {
-            db.Publications.create({
-              titre: filter.clean(req.body.titre),
-              description: filter.clean(req.body.description),
-              image: imgName,
-              statut: "active",
-            //  UserId: req.user.id,
-            }).then((p) => {
-              res.send(p);
-              notifier.notify("publié");
-            });
-          } else {
-            res.send("Ajouter un sujet ....");
-          }
-        }
-      });
-    }else{
-      res.send("type doit etre png , jpg ,gif");
-    }
+    res.send("Ajouter un sujet ....");
   }
 });
 
@@ -94,9 +62,16 @@ router.put("/update/:id", auth.verifyToken, (req, res) => {
 });
 
 router.get("/detail/:id", function (req, res, next) {
-  db.Publications.findOne({ where: { id: req.params.id } }).then((resp) => {
-    res.json(resp);
-  });
+  var publicationId = req.params.id;
+  db.sequelize
+    .query(
+      `SELECT fullName , publications.titre, image ,description , publications.UserId,avatar,publications.createdAt 
+      FROM publications,users 
+      WHERE publications.UserId = users.id and publications.id = "${publicationId}" and publications.statut = "active"`
+    )
+    .then((resp) => {
+      res.json(resp);
+    });
 });
 
 router.get("/search/:searchTerm", function (req, res, next) {
@@ -126,3 +101,52 @@ module.exports = router;
 
 //controle de saisie
 //recherche multiple
+
+// router.post("/add",auth.verifyToken,(req, res) => {
+//   if (!req.files) {
+//     if (req.body.description !== "") {
+//       db.Publications.create({
+//         titre: filter.clean(req.body.titre),
+//         description: filter.clean(req.body.description),
+//         statut: "active",
+//        // UserId: req.user.id,
+//       }).then((p) => {
+//         res.send(p);
+//         notifier.notify("publié");
+//       });
+//     } else {
+//       res.send("Ajouter un sujet ....");
+//     }
+//   } else {
+//     file = req.files.image;
+//     imgName = `${shortUUID.generate()}.${file.mimetype.split("/")[1]}`;
+
+//     if (
+//       file.mimetype == "image/jpeg" ||
+//       file.mimetype == "image/png" ||
+//       file.mimetype == "image/gif"
+//     ) {
+//       file.mv("public/images/upload/publications/" + imgName, function (err) {
+//         {
+//           console.log("image"+imgName)
+//           if (req.body.description !== "") {
+//             db.Publications.create({
+//               titre: filter.clean(req.body.titre),
+//               description: filter.clean(req.body.description),
+//               image: imgName,
+//               statut: "active",
+//             //  UserId: req.user.id,
+//             }).then((p) => {
+//               res.send(p);
+//               notifier.notify("publié");
+//             });
+//           } else {
+//             res.send("Ajouter un sujet ....");
+//           }
+//         }
+//       });
+//     }else{
+//       res.send("type doit etre png , jpg ,gif");
+//     }
+//   }
+// });
