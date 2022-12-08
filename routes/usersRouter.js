@@ -61,7 +61,7 @@ userRouter.delete('/', (req, res, next) => {
 
 // $$$$$$$$$$$$$$$$$$$ SIGNUP $$$$$$$$$$$$$$$$$$$
 userRouter.post('/signup', (req, res, next) => {
-  db.Users.findOne({ where: { [Op.or]: [{ username: req.body.username }, { email: req.body.email },{phone: req.body.phone}] }, raw: true })
+  db.Users.findOne({ where: { [Op.or]: [{ username: req.body.username }, { email: req.body.email }, { phone: req.body.phone }] }, raw: true })
     .then((user) => {
       if (user && user.username == req.body.username) {
         res.statusCode = 409;
@@ -83,88 +83,150 @@ userRouter.post('/signup', (req, res, next) => {
         const smsConfirCode = codeGenerator(6, { type: 'number' });
 
 
-
-        if (!req.files) {
-          db.Users.create({
-            fullName: req.body.fullName,
-            username: req.body.username,
-            password: bcrypt.hashSync(req.body.password, 8),
-            email: req.body.email,
-            phone: req.body.phone,
-            domain: req.body.domain,
-            interest: req.body.interest,
-            speciality: req.body.speciality,
-            confirEmailCode: confirCode,
-            confirSmsCode: smsConfirCode,
-            role: req.body.role
-          })
-            .then((user) => {
-              const message =
-                `<div>
+        db.Users.create({
+          fullName: req.body.fullName,
+          username: req.body.username,
+          password: bcrypt.hashSync(req.body.password, 8),
+          email: req.body.email,
+          avatar: req.body.avatar,
+          phone: req.body.phone,
+          domain: req.body.domain,
+          interest: req.body.interest,
+          speciality: req.body.speciality,
+          confirEmailCode: confirCode,
+          confirSmsCode: smsConfirCode,
+          role: req.body.role
+        })
+          .then((user) => {
+            const message =
+              `<div>
             <h1>Email Confirmation</h1>
             <h2>Hello ${req.body.fullName}</h2>
             <p>Thank you for subscribing. Please confirm your email by clicking on the following link</p>
-            <a href=${process.env.BASE_URL}/users/verify/${user.dataValues.id}/${confirCode}> Click here</a>
+            <a href=${process.env.EMAIL_URL}/users/verify/${user.dataValues.id}/${confirCode}> Click here</a>
           </div>`
-              sendEmail(req.body.email, "SAVIOR TECH | Confirm Email", message);
+            sendEmail(req.body.email, "SAVIOR TECH | Confirm Email", message);
 
-              sendSms(req.body.phone, smsConfirCode);
-              res.statusCode = 200;
-              res.setHeader('Content-Type', 'application/json');
-              res.json({ success: true, message: "Signup successfully", user: user });
-            },
-              err => next(err))
-        } else {
-          var image = req.files.image;
-          var avatar = `${shortUUID.generate()}.${image.mimetype.split('/')[1]}`;
-          if (image.mimetype == "image/jpeg" || image.mimetype == "image/png" || image.mimetype == "image/gif") {
-            image.mv('public/images/upload/users/' + avatar, (err) => {
-              if (err) {
-                next(err)
-              } else {
-                db.Users.create({
-                  fullName: req.body.fullName,
-                  username: req.body.username,
-                  password: bcrypt.hashSync(req.body.password, 8),
-                  email: req.body.email,
-                  avatar: avatar,
-                  phone: req.body.phone,
-                  domain: req.body.domain,
-                  interest: req.body.interest,
-                  speciality: req.body.speciality,
-                  confirEmailCode: confirCode,
-                  confirSmsCode: smsConfirCode,
-                  role: req.body.role
-                })
-                  .then((user) => {
-                    const message =
-                      `<div>
-                  <h1>Email Confirmation</h1>
-                  <h2>Hello ${req.body.fullName}</h2>
-                  <p>Thank you for subscribing. Please confirm your email by clicking on the following link</p>
-                  <a href=${process.env.BASE_URL}/users/verify/${user.dataValues.id}/${confirCode}> Click here</a>
-                </div>`
-                    sendEmail(req.body.email, "SAVIOR TECH | Confirm Email", message);
-
-                    sendSms(req.body.phone, smsConfirCode);
-                    res.statusCode = 200;
-                    res.setHeader('Content-Type', 'application/json');
-                    res.json({ success: true, message: "Signup successfully", user: user });
-                  },
-                    err => next(err))
-              }
-            })
-          }
-
-        }
+            sendSms(req.body.phone, smsConfirCode);
+            res.statusCode = 200;
+            res.setHeader('Content-Type', 'application/json');
+            res.json({ success: true, message: "Signup successfully", user: user });
+          },
+            err => next(err))
       }
     },
       err => next(err))
     .catch(err => next(err))
 });
+
+// userRouter.post('/signup', (req, res, next) => {
+//   db.Users.findOne({ where: { [Op.or]: [{ username: req.body.username }, { email: req.body.email },{phone: req.body.phone}] }, raw: true })
+//     .then((user) => {
+//       if (user && user.username == req.body.username) {
+//         res.statusCode = 409;
+//         res.setHeader('Content-Type', 'application/json');
+//         res.json({ success: false, statusMsg: "Username is already exists" });
+
+//       } else if (user && user.email == req.body.email) {
+//         res.statusCode = 409;
+//         res.setHeader('Content-Type', 'application/json');
+//         res.json({ success: false, statusMsg: "Email is already exists" });
+
+//       } else if (user && user.phone == req.body.phone) {
+//         res.statusCode = 409;
+//         res.setHeader('Content-Type', 'application/json');
+//         res.json({ success: false, statusMsg: "Phone is already exists" });
+
+//       } else {
+//         const confirCode = auth.getToken({ email: req.body.email });
+//         const smsConfirCode = codeGenerator(6, { type: 'number' });
+
+
+
+//         if (!req.files) {
+//           db.Users.create({
+//             fullName: req.body.fullName,
+//             username: req.body.username,
+//             password: bcrypt.hashSync(req.body.password, 8),
+//             email: req.body.email,
+//             phone: req.body.phone,
+//             domain: req.body.domain,
+//             interest: req.body.interest,
+//             speciality: req.body.speciality,
+//             confirEmailCode: confirCode,
+//             confirSmsCode: smsConfirCode,
+//             role: req.body.role
+//           })
+//             .then((user) => {
+//               const message =
+//                 `<div>
+//             <h1>Email Confirmation</h1>
+//             <h2>Hello ${req.body.fullName}</h2>
+//             <p>Thank you for subscribing. Please confirm your email by clicking on the following link</p>
+//             <a href=${process.env.BASE_URL}/users/verify/${user.dataValues.id}/${confirCode}> Click here</a>
+//           </div>`
+//               sendEmail(req.body.email, "SAVIOR TECH | Confirm Email", message);
+
+//               sendSms(req.body.phone, smsConfirCode);
+//               res.statusCode = 200;
+//               res.setHeader('Content-Type', 'application/json');
+//               res.json({ success: true, message: "Signup successfully", user: user });
+//             },
+//               err => next(err))
+//         } else {
+//           var image = req.files.image;
+//           var avatar = `${shortUUID.generate()}.${image.mimetype.split('/')[1]}`;
+//           if (image.mimetype == "image/jpeg" || image.mimetype == "image/png" || image.mimetype == "image/gif") {
+//             image.mv('public/images/upload/users/' + avatar, (err) => {
+//               if (err) {
+//                 next(err)
+//               } else {
+//                 db.Users.create({
+//                   fullName: req.body.fullName,
+//                   username: req.body.username,
+//                   password: bcrypt.hashSync(req.body.password, 8),
+//                   email: req.body.email,
+//                   avatar: avatar,
+//                   phone: req.body.phone,
+//                   domain: req.body.domain,
+//                   interest: req.body.interest,
+//                   speciality: req.body.speciality,
+//                   confirEmailCode: confirCode,
+//                   confirSmsCode: smsConfirCode,
+//                   role: req.body.role
+//                 })
+//                   .then((user) => {
+//                     const message =
+//                       `<div>
+//                   <h1>Email Confirmation</h1>
+//                   <h2>Hello ${req.body.fullName}</h2>
+//                   <p>Thank you for subscribing. Please confirm your email by clicking on the following link</p>
+//                   <a href=${process.env.BASE_URL}/users/verify/${user.dataValues.id}/${confirCode}> Click here</a>
+//                 </div>`
+//                     sendEmail(req.body.email, "SAVIOR TECH | Confirm Email", message);
+
+//                     sendSms(req.body.phone, smsConfirCode);
+//                     res.statusCode = 200;
+//                     res.setHeader('Content-Type', 'application/json');
+//                     res.json({ success: true, message: "Signup successfully", user: user });
+//                   },
+//                     err => next(err))
+//               }
+//             })
+//           }
+
+//         }
+//       }
+//     },
+//       err => next(err))
+//     .catch(err => next(err))
+// });
+
 // $$$$$$$$$$$$$$$$$$$ SIGNUP $$$$$$$$$$$$$$$$$$$
 
 // $$$$$$$$$$$$$$$$$$$ VERIFY EMAIL $$$$$$$$$$$$$$$$$$$ 
+
+
 userRouter.get('/verify/:userId/:confirCode', (req, res, next) => {
   db.Users.update(
     { confirResetPassCode: null, status: "confirmed" },
@@ -219,7 +281,8 @@ userRouter.get('/verifysms/:smsCode', (req, res, next) => {
 // $$$$$$$$$$$$$$$$$$$ SIGNIN $$$$$$$$$$$$$$$$$$$
 userRouter.post('/signin', (req, res, next) => {
   db.Users.findOne({
-    where: { username: req.body.username }})
+    where: { username: req.body.username }
+  })
     .then((user) => {
       if (!user) {
         res.statusCode = 404;
@@ -254,7 +317,7 @@ userRouter.post('/signin', (req, res, next) => {
             avatar: user.avatar,
             username: user.username,
             email: user.email,
-            phone:user.phone,
+            phone: user.phone,
             domain: user.domain,
             interest: user.interest,
             speciality: user.speciality,
@@ -281,7 +344,7 @@ userRouter.post('/signin', (req, res, next) => {
 
 
 // $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ delete user with image $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-userRouter.route('/:userId')    
+userRouter.route('/:userId')
   .put(auth.verifyToken, (req, res, next) => {
     db.Users.update(req.body, { where: { id: req.user.id } })
       .then((user) => {
@@ -294,7 +357,7 @@ userRouter.route('/:userId')
   })
 
   // .delete(auth.verifyToken, auth.verifyAdmin, (req, res, next) => {
-    .delete((req, res, next) => {
+  .delete((req, res, next) => {
     db.Users.findOne({ where: { id: req.params.userId }, raw: true })
       .then((user) => {
         if (user.avatar != null) {
@@ -330,7 +393,7 @@ userRouter.route('/:userId')
 
 //$$$$$$$$$$$$$$$ block user $$$$$$$$$$$$$$$$$$$$$$//
 // , auth.verifyToken, auth.verifyAdmin,
-userRouter.put('/block/:userId' ,(req, res, next) => {
+userRouter.put('/block/:userId', (req, res, next) => {
   db.Users.update({ status: "blocked" }, { where: { id: req.params.userId } })
     .then((user) => {
       res.statusCode = 200;
@@ -381,7 +444,7 @@ userRouter.post('/forgotpassword/sendlink', (req, res, next) => {
     })
 })
 
-userRouter.get('/forgotpassword/resetpassword/:userId/:confirPassCode', (req, res, next) => {
+userRouter.put('/forgotpassword/resetpassword/:userId/:confirPassCode', (req, res, next) => {
   db.Users.update(
     { confirResetPassCode: null, password: bcrypt.hashSync(req.body.newPassword, 8) },
     { where: { [Op.and]: [{ id: req.params.userId }, { confirResetPassCode: req.params.confirPassCode }] } }
