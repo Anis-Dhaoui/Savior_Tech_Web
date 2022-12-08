@@ -103,7 +103,7 @@ userRouter.post('/signup', (req, res, next) => {
             <h1>Email Confirmation</h1>
             <h2>Hello ${req.body.fullName}</h2>
             <p>Thank you for subscribing. Please confirm your email by clicking on the following link</p>
-            <a href=${process.env.EMAIL_URL}/users/verify/${user.dataValues.id}/${confirCode}> Click here</a>
+            <a href=${process.env.FRONT_URL}/users/verifyemail/${user.dataValues.id}/${confirCode}> Click here</a>
           </div>`
             sendEmail(req.body.email, "SAVIOR TECH | Confirm Email", message);
 
@@ -227,10 +227,10 @@ userRouter.post('/signup', (req, res, next) => {
 // $$$$$$$$$$$$$$$$$$$ VERIFY EMAIL $$$$$$$$$$$$$$$$$$$ 
 
 
-userRouter.get('/verify/:userId/:confirCode', (req, res, next) => {
+userRouter.get('/verifyemail/:userId/:confirCode', (req, res, next) => {
   db.Users.update(
-    { confirResetPassCode: null, status: "confirmed" },
-    { where: { [Op.and]: [{ id: req.params.userId }, { confirResetPassCode: req.params.confirCode }] } }
+    { confirEmailCode: null, status: "confirmed" },
+    { where: { [Op.and]: [{ id: req.params.userId }, { confirEmailCode: req.params.confirCode }] } }
   )
     .then((user) => {
       if (user[0] !== 0) {
