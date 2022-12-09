@@ -28,6 +28,7 @@ var SignalerRouter = require('./routes/Signaler');
 var QuestionsRouter = require('./routes/Question');
 var ReponsesRouter = require('./routes/Reponses');
 var AimesRouter = require('./routes/Aimes');
+var VotesRouter = require('./routes/Vote');
 
 var app = express();
   app.use(cors());
@@ -71,7 +72,7 @@ app.use('/signaler',SignalerRouter);
 app.use('/questions', QuestionsRouter);
 app.use('/reponses', ReponsesRouter);
 app.use('/aimes', AimesRouter);
-
+app.use('/vote', VotesRouter);
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
     next(createError(404));

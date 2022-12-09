@@ -78,64 +78,25 @@ router.get('/', function(req, res, next) {
 });
 router.put('/remove/:Questionid', auth.verifyToken,(req, res) => {
     db.questions.update({status: "supprimer"}, { where: {id: req.params.Questionid,UserId: req.user.id,status: "actif"} }).then(
-        () => {
+        (p) => {
             res.statusCode = 200;
-            res.send('removed');
+            res.send(p);
         }
     );
 });
 router.put('/update/:Questionid', auth.verifyToken, (req, res) => {
-    if (!req.files){
+
     db.questions.update({
         description: filter.clean(req.body.description),
-        titre: req.body.titre
+        titre: req.body.titre,
+        image:req.body.image
     }, { where: {id: req.params.Questionid, UserId: req.user.id,status: "actif"} }).then(
-        () => {
+        (p) => {
             res.statusCode = 200;
-            res.send('updated');
+            res.send(p);
         });
-    }
-    else{
-        db.questions.findOne({ where: {id: req.params.Questionid, UserId: req.user.id,status: "actif"}, raw: true })
-        .then((qr) => {
-            if (qr.image != null) {
-                var imgWithPath = `public/images/upload/questions/${qr.image}`;
+   
 
-                if (fs.existsSync(imgWithPath)) {
-                        fs.unlink(imgWithPath, err => {
-                            if (err) next(err);
-                        });
-                     
-                } else {
-                    console.log("image doesn't exist");
-                }
-            }
-        },
-            err => next(err))
-      
-        var file = req.files.image;
-        
-        var img_name = `${shortUUID.generate()}-${req.user.id}.${file.mimetype.split('/')[1]}`;
-
-        if (file.mimetype == "image/jpeg" || file.mimetype == "image/png" || file.mimetype == "image/gif") {
-
-            file.mv('public/images/upload/questions/' + file.name, function(err) {
-
-                {
-                    db.questions.update({
-                        description: filter.clean(req.body.description),
-                        titre: req.body.titre,
-                        image: file.name
-                    }, 
-                    { where: {id: req.params.Questionid, UserId: req.user.id,status: "actif"} }).then(
-                        () => {
-                            res.statusCode = 200;
-                            res.send('updated');
-                        });
-                }
-            });
-        }
-    }
 });
 router.get('/detail/:Questionid', function(req, res, next) {
     db.questions.findOne({  include: [
