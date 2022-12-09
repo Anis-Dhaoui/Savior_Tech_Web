@@ -22,19 +22,20 @@ router.post('/add', auth.verifyToken, (req, res) => {
 });
 
 router.delete('/remove/:id', auth.verifyToken, (req, res) => {
-    db.reponses.destroy({ where: { UserId: req.user.id,questionId : req.body.questionId} }).then(
-        () => {
-            res.send('removed');
+    db.reponses.destroy({ where: { UserId: req.user.id,Id : req.params.id} }).then(
+        (p) => {
+            res.statusCode = 200;
         }
     );
 });
 router.put('/update/:id',  auth.verifyToken,(req, res) => {
-    db.reponses.update(req.body, { where: { UserId: req.user.id,questionId : req.body.questionId} }).then(
+    db.reponses.update(req.body, { where: { UserId: req.user.id,Id : req.body.id} }).then(
         () => {
-            res.send('updated');
+            res.send();
         });
 
 });
+
 router.get('/:id', function(req, res, next) {
     db.reponses.findAll({ 
            include: [
@@ -48,7 +49,7 @@ router.get('/:id', function(req, res, next) {
             model:Question,
             // attributes: { exclude: ['password'] },
             attributes: ['UserId']
-        },
+        }
        
     ], where: { questionId: req.params.id }, order: [['createdAt']] }).then((resp) => {
         res.send(resp);
