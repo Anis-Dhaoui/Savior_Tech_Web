@@ -32,7 +32,7 @@ module.exports = (sequelize, DataTypes) => {
         },
         event_status: {
             type: DataTypes.STRING,
-            allowNull: false,
+            defaultValue: true
         },
         event_location: {
             type: DataTypes.STRING,
