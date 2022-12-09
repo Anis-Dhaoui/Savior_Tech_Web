@@ -51,7 +51,7 @@ paymentRouter.post('/pay/:eventId', (req, res, next) => {
                     } else {
                         payment.links.map(item => {
                             if (item.rel == "approval_url") {
-                                res.redirect(item.href);
+                                res.json({ forwardLink: item.href });
                                 console.log(item.href);
                             }
                         })
@@ -70,7 +70,7 @@ paymentRouter.post('/pay/:eventId', (req, res, next) => {
 paymentRouter.get('/success', (req, res) => {
     const payerId = req.query.PayerID;
     const paymentId = req.query.paymentId;
-    
+
     EVENT.findOne({ where: { id: req.query.event_id }, raw: true })
         .then((event) => {
             const execute_payment_json = {
@@ -98,7 +98,7 @@ paymentRouter.get('/success', (req, res) => {
 });
 
 // $$$$$$$$$$$$$$$$$$ WHEN PURCHASE CANCELLED $$$$$$$$$$$$$$$$$$
-paymentRouter.get('/cancel', (req, res, next) =>{
+paymentRouter.get('/cancel', (req, res, next) => {
     res.render('purchaseCancel');
 })
 module.exports = paymentRouter;
