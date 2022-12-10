@@ -12,7 +12,7 @@ module.exports = (sequelize, DataTypes) => {
         },
         event_image: {
             type: DataTypes.STRING,
-            allowNull: false,
+            allowNull: true,
         },
         event_category: {
             type: DataTypes.STRING,
@@ -32,7 +32,7 @@ module.exports = (sequelize, DataTypes) => {
         },
         event_status: {
             type: DataTypes.STRING,
-            allowNull: false,
+            defaultValue: true
         },
         event_location: {
             type: DataTypes.STRING,

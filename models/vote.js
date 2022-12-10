@@ -1,21 +1,21 @@
 module.exports = (sequelize, DataTypes) => {
-    const aimes = sequelize.define(
-        'aimes', {
+    const vote = sequelize.define(
+        'vote', {
             id: {
                 type: DataTypes.UUID,
                 defaultValue: DataTypes.UUIDV4,
                 primaryKey: true
             },
-            reaction: {
+            vote: {
                 type: DataTypes.STRING,
                 allowNull: false
             }
         }
     );
-    aimes.associate = models => {
-        aimes.belongsTo(models.questions, { onDelete: "cascade" })
-        aimes.belongsTo(models.Users, { onDelete: "cascade" })
+    vote.associate = models => {
+        vote.belongsTo(models.reponses, { onDelete: "cascade" })
+        vote.belongsTo(models.Users, { onDelete: "cascade" })
 
     }
-    return aimes;
+    return vote;
 }

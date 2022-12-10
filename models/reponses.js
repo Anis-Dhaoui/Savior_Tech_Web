@@ -9,6 +9,14 @@ module.exports = (sequelize, DataTypes) => {
             message: {
                 type: DataTypes.STRING,
                 allowNull: false
+            },
+            nbLike: {
+                type: DataTypes.INTEGER,
+                defaultValue: 0,
+            },
+            nbDisLike: {
+                type: DataTypes.INTEGER,
+                defaultValue: 0,
             }
 
         }
