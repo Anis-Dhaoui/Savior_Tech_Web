@@ -28,6 +28,20 @@ router.delete('/remove/:id', auth.verifyToken, (req, res) => {
         }
     );
 });
+router.delete('/removeAdmin/:id', auth.verifyToken,auth.verifyAdmin, (req, res) => {
+    db.reponses.destroy({ where: { Id : req.params.id} }).then(
+        (p) => {
+            res.statusCode = 200;
+        }
+    );
+});
+router.put('/updateAdmin/:id',  auth.verifyToken,auth.verifyAdmin,(req, res) => {
+    db.reponses.update(req.body, { where: { Id : req.body.id} }).then(
+        () => {
+            res.send();
+        });
+
+});
 router.put('/update/:id',  auth.verifyToken,(req, res) => {
     db.reponses.update(req.body, { where: { UserId: req.user.id,Id : req.body.id} }).then(
         () => {
