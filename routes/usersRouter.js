@@ -10,6 +10,7 @@ var sendSms = require('../utils/sms');
 const { Op, where } = require("sequelize");
 const shortUUID = require('short-uuid');
 const fs = require('fs');
+const { verify } = require('crypto');
 
 
 // /users/ api endpoint
@@ -26,7 +27,7 @@ const fs = require('fs');
 //     }
 //   })
 
-userRouter.get('/', (req, res, next) => {
+userRouter.get('/', auth.verifyToken, auth.verifyAdmin, (req, res, next) => {
   db.Users.findAll()
     .then((users) => {
       if (users !== null) {
@@ -356,8 +357,8 @@ userRouter.route('/:userId')
       .catch(err => next(err))
   })
 
-  // .delete(auth.verifyToken, auth.verifyAdmin, (req, res, next) => {
-  .delete((req, res, next) => {
+  .delete(auth.verifyToken, auth.verifyAdmin, (req, res, next) => {
+  // .delete((req, res, next) => {
     db.Users.findOne({ where: { id: req.params.userId }, raw: true })
       .then((user) => {
         if (user.avatar != null) {
@@ -393,7 +394,7 @@ userRouter.route('/:userId')
 
 //$$$$$$$$$$$$$$$ block user $$$$$$$$$$$$$$$$$$$$$$//
 // , auth.verifyToken, auth.verifyAdmin,
-userRouter.put('/block/:userId', (req, res, next) => {
+userRouter.put('/block/:userId',auth.verifyToken, auth.verifyAdmin, (req, res, next) => {
   db.Users.update({ status: "blocked" }, { where: { id: req.params.userId } })
     .then((user) => {
       res.statusCode = 200;
